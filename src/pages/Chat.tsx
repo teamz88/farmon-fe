@@ -198,7 +198,7 @@ const Chat: React.FC = () => {
     try {
       // Get auth token
       const token = localStorage.getItem('authToken');
-      const baseURL = (import.meta as any).env.VITE_API_BASE_URL || 'https://devbackend.junkgpt.com/api';
+      const baseURL = (import.meta as any).env.VITE_API_BASE_URL || 'https://backendfarmon.omadligrouphq.com/api';
       
       const response = await fetch(`${baseURL}/chat/stream/`, {
         method: 'POST',
