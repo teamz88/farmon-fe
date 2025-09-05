@@ -1,6 +1,6 @@
-# Bolt Frontend
+# Farmon Frontend
 
-A modern React application built with TypeScript, Vite, and Tailwind CSS for the Bolt platform.
+A modern React application built with TypeScript, Vite, and Tailwind CSS for the Farmon Instant Chat platform.
 
 ## 🚀 Features
 
