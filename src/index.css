@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+/* Custom CSS Variables for the new color palette */
+:root {
+  /* Primary Colors - Medium Slate Blue */
+  --medium-slate-blue: #6A71F7;
+  --primary: #6A71F7;
+  --primary-50: #F0F1FE;
+  --primary-100: #E1E4FD;
+  --primary-500: #6A71F7;
+  --primary-600: #5A61E8;
+  --primary-700: #4A51D9;
+  
+  /* Secondary Colors - Dim Gray */
+  --dim-gray: #6B6A70;
+  --secondary: #6B6A70;
+  --secondary-50: #F7F7F8;
+  --secondary-100: #EFEFEF;
+  --secondary-500: #6B6A70;
+  --secondary-600: #5A595F;
+  --secondary-700: #49484E;
+  
+  /* Dark Colors - Jet */
+  --jet: #353439;
+  --dark: #353439;
+  --dark-800: #353439;
+  --dark-900: #1F1E22;
+  
+  /* Accent Colors - Buff */
+  --buff: #D59F84;
+  --accent: #D59F84;
+  --accent-50: #FBF7F4;
+  --accent-100: #F7EFE9;
+  --accent-500: #D59F84;
+  --accent-600: #C88A6A;
+  
+  /* Success Colors - Mantis */
+  --mantis: #6FBD68;
+  --success: #6FBD68;
+  --success-50: #F4F9F4;
+  --success-100: #E9F3E8;
+  --success-500: #6FBD68;
+  --success-600: #5AA851;
+  
+  /* Error Colors */
+  --error: #E74C3C;
+  --error-50: #FDEDEA;
+  --error-100: #FADBD5;
+  --error-500: #E74C3C;
+  --error-600: #D73527;
+  
+  /* Semantic mappings */
+  --info: var(--primary);
+  --warning: var(--accent);
+  
+  /* Background and text colors */
+  --background: #FFFFFF;
+  --foreground: var(--jet);
+  --muted: var(--secondary-100);
+  --muted-foreground: var(--secondary-500);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --border: var(--secondary-200);
+  --input: var(--border);
+  --ring: var(--primary);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--jet);
+    --foreground: #FFFFFF;
+    --muted: var(--dark-800);
+    --muted-foreground: var(--secondary-400);
+    --card: var(--dark-800);
+    --card-foreground: var(--foreground);
+    --border: var(--secondary-700);
+    --input: var(--border);
+  }
+}
+
+.ql-container {
+    font-size: 16px;
+}
+
+/* Markdown content styles - reset to browser defaults */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.markdown-content h1 { font-size: 2em; }
+.markdown-content h2 { font-size: 1.5em; }
+.markdown-content h3 { font-size: 1.17em; }
+.markdown-content h4 { font-size: 1em; }
+.markdown-content h5 { font-size: 0.83em; }
+.markdown-content h6 { font-size: 0.67em; }
+
+.markdown-content p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 40px;
+}
+
+.markdown-content li {
+  display: list-item;
+}
+
+.markdown-content ul li {
+  list-style-type: disc;
+}
+
+.markdown-content ol li {
+  list-style-type: decimal;
+}
+
+.markdown-content strong,
+.markdown-content b {
+  font-weight: bold;
+}
+
+.markdown-content em,
+.markdown-content i {
+  font-style: italic;
+}
+
+.markdown-content code {
+  font-family: monospace;
+  background-color: transparent;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid #e5e7eb;
+}
+
+.markdown-content pre {
+  font-family: monospace;
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  overflow: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.markdown-content blockquote {
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  border-left: 4px solid #ddd;
+  padding-left: 10px;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.markdown-content th {
+  font-weight: bold;
+  background-color: transparent;
+}
+
+/* Sidebar and Chat Layout Fixes */
+.sidebar-container {
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.chat-container {
+  height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+.chat-messages {
+  height: calc(100% - 120px);
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.chat-input-container {
+  height: 80px;
+  flex-shrink: 0;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 640px) {
+  .chat-container {
+    height: calc(100vh - 80px);
+  }
+  
+  .chat-messages {
+    height: calc(100% - 100px);
+    padding: 0.5rem;
+  }
+  
+  .chat-input-container {
+    height: 70px;
+    padding: 0.5rem;
+  }
+}
+
+/* Ensure proper scrolling for sidebar conversations */
+.conversations-list {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+/* Fix for action buttons visibility */
+.message-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.message-group:hover .message-actions {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .message-actions {
+    opacity: 1;
+  }
+}
+
+/* Conversation menu dropdown */
+.conversation-menu {
+  min-width: 200px;
+  max-width: 250px;
+  max-height: 400px;
+  overflow-y: auto;
+  transform: scale(0.95);
+  opacity: 0;
+  animation: menuFadeIn 0.15s ease-out forwards;
+}
+
+@keyframes menuFadeIn {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.conversation-menu button {
+  transition: background-color 0.15s ease;
+}
+
+.conversation-menu button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.conversation-menu .menu-divider {
+  margin: 4px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .sidebar-container {
+    width: 100%;
+    position: fixed;
+    z-index: 40;
+  }
+  
+  .chat-container {
+    padding-left: 0;
+  }
+  
+  .conversation-menu {
+    min-width: 180px;
+    max-width: calc(100vw - 20px);
+  }
+}
