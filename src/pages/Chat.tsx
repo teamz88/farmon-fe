@@ -32,8 +32,9 @@ import {
   EyeIcon,
   Link2Icon,
   LinkIcon,
+  Paperclip as PaperclipIcon,
 } from 'lucide-react';
-import { chatApi } from '../services/api';
+import { chatApi, filesApi } from '../services/api';
 import { Conversation, ChatMessage, ConversationListResponse, MessageListResponse, Folder } from '../types/chat';
 import { useChatContext } from '../contexts/ChatContext';
 import { useAuth } from '../hooks/useAuth';
@@ -90,7 +91,10 @@ const Chat: React.FC = () => {
   const [feedbackReason, setFeedbackReason] = useState('');
   const [currentFeedbackMessage, setCurrentFeedbackMessage] = useState<ChatMessage | null>(null);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<Set<string>>(new Set());
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { conversations, loadConversations } = useChatContext();
   const { user } = useAuth();
 
@@ -200,16 +204,26 @@ const Chat: React.FC = () => {
       const token = localStorage.getItem('authToken');
       const baseURL = (import.meta as any).env.VITE_API_BASE_URL || 'https://backendfarmon.omadligrouphq.com/api';
       
+      // Prepare request body with user_info if user is available
+      const requestBody: any = {
+        message: messageText,
+        conversation_id: conversationId
+      };
+      
+      // Add user_info if user is authenticated
+      if (user) {
+        requestBody.user_info = {
+          email: user.email
+        };
+      }
+      
       const response = await fetch(`${baseURL}/chat/stream/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
-        body: JSON.stringify({
-          message: messageText,
-          conversation_id: conversationId
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -379,6 +393,14 @@ const Chat: React.FC = () => {
     setIsTyping(true);
     
     try {
+      // Upload file first if one is selected
+      if (selectedFile) {
+        setUploadingFile(true);
+        await uploadFileToBackend(selectedFile);
+        setSelectedFile(null);
+        setUploadingFile(false);
+      }
+      
       if (!selectedConversation) {
         // No conversation selected, create new one and send first message
         await sendFirstMessage(messageText);
@@ -403,9 +425,66 @@ const Chat: React.FC = () => {
       if (selectedConversation) {
         setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-')));
       }
+      setUploadingFile(false);
     } finally {
       setLoading(false);
       setIsTyping(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const uploadFileToBackend = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', `Uploaded from chat: ${file.name}`);
+
+    const response = await filesApi.uploadFile(formData);
+    return response.data;
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    setUploadingFile(true);
+    try {
+      await uploadFileToBackend(selectedFile);
+      
+      // Add a system message to show file was uploaded
+      const fileMessage: ChatMessage = {
+        id: `file-${Date.now()}`,
+        content: `📎 File uploaded: ${selectedFile.name}`,
+        message_type: 'user',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        conversation: selectedConversation || ''
+      };
+      
+      if (selectedConversation) {
+        setMessages(prev => [...prev, fileMessage]);
+      }
+      
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      alert('File upload failed. Please try again.');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -699,6 +778,14 @@ const Chat: React.FC = () => {
   // Auto-create conversation and send first message
   const sendFirstMessage = async (messageText: string) => {
     try {
+      // Upload file first if one is selected
+      if (selectedFile) {
+        setUploadingFile(true);
+        await uploadFileToBackend(selectedFile);
+        setSelectedFile(null);
+        setUploadingFile(false);
+      }
+      
       // Create new conversation with auto-generated title
       const conversationTitle = generateConversationTitle(messageText);
       const createRequest: any = {
@@ -1097,31 +1184,74 @@ const Chat: React.FC = () => {
 
             {/* Message Input */}
             <div className="p-2 sm:p-4 border-t border-primary-200">
-                <div className="flex gap-2">
-                 <textarea
-                   className="flex-1 resize-none rounded-lg border border-primary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-primary-100 disabled:cursor-not-allowed"
-                   rows={1}
-                   value={newMessage}
-                   onChange={(e) => setNewMessage(e.target.value)}
-                   placeholder="Type your message..."
-                   onKeyPress={(e) => {
-                     if (e.key === 'Enter' && !e.shiftKey) {
-                       e.preventDefault();
-                       sendMessage();
-                     }
-                   }}
-                   disabled={loading}
-                   style={{ maxHeight: '96px' }}
-                 />
-                 <button
-                   onClick={sendMessage}
-                   disabled={loading}
-                   className="px-3 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-                 >
-                   <SendIcon className="w-4 h-4" />
-                 </button>
+              {/* Selected file display */}
+              {selectedFile && (
+                <div className="mb-2 p-2 bg-primary-50 rounded-lg border border-primary-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PaperclipIcon className="w-4 h-4 text-primary-600" />
+                      <span className="text-sm text-primary-700">{selectedFile.name}</span>
+                      <span className="text-xs text-primary-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleFileUpload}
+                        disabled={uploadingFile}
+                        className="px-2 py-1 text-xs bg-primary-400 text-white rounded hover:bg-primary-500 disabled:bg-primary-300 transition-colors"
+                      >
+                        {uploadingFile ? 'Uploading...' : 'Upload'}
+                      </button>
+                      <button
+                        onClick={removeSelectedFile}
+                        className="p-1 text-primary-400 hover:text-primary-600 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              )}
+              
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading || uploadingFile}
+                  className="p-2 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Attach file"
+                >
+                  <PaperclipIcon className="w-4 h-4" />
+                </button>
+                <textarea
+                  className="flex-1 resize-none rounded-lg border border-primary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-primary-100 disabled:cursor-not-allowed"
+                  rows={1}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  disabled={loading}
+                  style={{ maxHeight: '96px' }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={loading}
+                  className="px-3 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                >
+                  <SendIcon className="w-4 h-4" />
+                </button>
               </div>
+            </div>
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-4">
@@ -1140,8 +1270,51 @@ const Chat: React.FC = () => {
                 <p className="text-primary-600">Start a conversation below</p>
               </div>
               
+              {/* Selected file display for start screen */}
+              {selectedFile && (
+                <div className="mb-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PaperclipIcon className="w-4 h-4 text-primary-600" />
+                      <span className="text-sm text-primary-700">{selectedFile.name}</span>
+                      <span className="text-xs text-primary-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleFileUpload}
+                        disabled={uploadingFile}
+                        className="px-3 py-1 text-sm bg-primary-400 text-white rounded hover:bg-primary-500 disabled:bg-primary-300 transition-colors"
+                      >
+                        {uploadingFile ? 'Uploading...' : 'Upload'}
+                      </button>
+                      <button
+                        onClick={removeSelectedFile}
+                        className="p-1 text-primary-400 hover:text-primary-600 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Centered input */}
               <div className="relative">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading || uploadingFile}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 p-1 text-primary-400 hover:text-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Attach file"
+                >
+                  <PaperclipIcon className="w-4 h-4" />
+                </button>
                 <textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
@@ -1152,7 +1325,7 @@ const Chat: React.FC = () => {
                     }
                   }}
                   placeholder="Type your message..."
-                  className="w-full px-4 py-3 pr-12 border border-primary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
+                  className="w-full px-12 py-3 pr-12 border border-primary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
                   rows={1}
                   disabled={loading}
                   style={{ minHeight: '48px', maxHeight: '120px' }}

@@ -37,7 +37,7 @@ const allMenuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', adminOnly: true },
   { text: 'Chat', icon: <ChatIcon />, path: '/chat', adminOnly: false },
   { text: 'Profile', icon: <UserIcon />, path: '/profile', adminOnly: false },
-  { text: 'Files', icon: <FolderIcon />, path: '/files', adminOnly: true },
+  { text: 'Files', icon: <FolderIcon />, path: '/files', adminOnly: false },
   { text: 'Users', icon: <UsersIcon />, path: '/users', adminOnly: true },
 ];
 

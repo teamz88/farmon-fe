@@ -64,7 +64,7 @@ function App() {
                   path="/profile" 
                   element={<Profile />} 
                 />
-                {isAdmin && <Route path="/files" element={<Files />} />}
+                <Route path="/files" element={<Files />} />
                 {isAdmin && <Route path="/users" element={<UserManagement />} />}
                 {/* Redirect non-admin users away from admin-only routes */}
                 {!isAdmin && <Route path="/dashboard" element={<Navigate to="/chat" replace />} />}
