@@ -15,7 +15,7 @@ import { Eye, EyeOff, Lock, User, LogIn, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,13 +28,13 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    if (!username || !password) {
-      setError('Please enter both username and password');
+    if (!usernameOrEmail || !password) {
+      setError('Please enter both username/email and password');
       setIsLoading(false);
       return;
     }
 
-    const result = await login(username, password);
+    const result = await login(usernameOrEmail, password);
 
     if (result.success) {
       // Redirect based on user role
@@ -45,7 +45,7 @@ const Login: React.FC = () => {
         window.location.href = '/chat';
       }
     } else {
-      setError(result.error || 'Login failed. Please try again.');
+      setError(result.error || 'Invalid username/email or password. Please try again.');
     }
 
     setIsLoading(false);
@@ -87,17 +87,17 @@ const Login: React.FC = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-gray-700">
-                  Username
+                <Label htmlFor="usernameOrEmail" className="text-sm font-medium text-gray-700">
+                  Username or Email
                 </Label>
                 <div className="relative group">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                   <Input
-                    id="username"
+                    id="usernameOrEmail"
                     type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username or email"
+                    value={usernameOrEmail}
+                    onChange={(e) => setUsernameOrEmail(e.target.value)}
                     className="pl-11 h-12 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
                     required
                   />
@@ -128,13 +128,6 @@ const Login: React.FC = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Forgot password link */}
-              <div className="text-right">
-                <a href="#" className="text-sm text-primary hover:text-primary-700 transition-colors">
-                  Forgot your password?
-                </a>
-              </div>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
@@ -157,12 +150,6 @@ const Login: React.FC = () => {
               </Button>
 
               {/* Sign up link */}
-              <div className="text-center text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary hover:text-primary-700 font-medium transition-colors">
-                  Create one now
-                </Link>
-              </div>
             </CardFooter>
           </form>
         </Card>

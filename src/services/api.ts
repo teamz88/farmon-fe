@@ -212,7 +212,23 @@ export const authApi = {
   checkClientInfoStatus: () => api.get('/auth/client-info/status/'),
   getUserClientInfo: (userId: number) => api.get(`/auth/users/${userId}/client-info/`),
   
-  // Generic post method for client info
+  // Magic link methods
+  createMagicLink: (data: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    company_name?: string;
+    phone_number?: string;
+  }) => api.post('/auth/magic-link/', data),
+  
+  validateMagicLink: (token: string) => api.get(`/auth/magic-link/${token}/`),
+  
+  setMagicLinkPassword: (token: string, data: {
+    password: string;
+    password_confirm: string;
+  }) => api.post(`/auth/magic-link/${token}/set-password/`, data),
+
+  // Generic post method for additional endpoints
   post: (url: string, data?: any) => api.post(url, data),
 };
 

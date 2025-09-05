@@ -70,7 +70,7 @@ export const useAuth = () => {
       let errorMessage = 'Login failed. Please try again.';
       
       if (error.response?.status === 401) {
-        errorMessage = 'Invalid username or password';
+        errorMessage = 'Invalid username/email or password';
       } else if (error.response?.data?.non_field_errors) {
         errorMessage = error.response.data.non_field_errors[0];
       } else if (error.response?.data?.message) {
@@ -195,5 +195,7 @@ export const useAuth = () => {
     refreshUser,
     checkAuthStatus,
     checkClientInfoStatus,
+    setUser,
+    setIsAuthenticated,
   };
 };
