@@ -34,7 +34,7 @@ A modern React application built with TypeScript, Vite, and Tailwind CSS for the
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd bolt/frontend
+   cd farmon/frontend
    ```
 
 2. **Install dependencies**

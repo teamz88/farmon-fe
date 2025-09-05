@@ -304,7 +304,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         }`}>
         <h1 className={`font-semibold text-white truncate flex items-center justify-center gap-2 ${isMobile ? 'text-xl font-bold' : 'text-lg'
           }`}>
-          <img src='/bolt.webp' alt='logo' className='w-full h-14' />
+          <img src='/farmon.png' alt='logo' className='w-full h-14' />
         </h1>
         {isMobile && (
           <button
