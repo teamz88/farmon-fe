@@ -57,7 +57,7 @@ const Login: React.FC = () => {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo/Brand section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center overflow-hidden bg-black rounded-xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center overflow-hidden rounded-xl mb-4 shadow-lg">
             <img src='/farmon.png' alt='logo' className='w-full h-16'/>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -98,7 +98,7 @@ const Login: React.FC = () => {
                     placeholder="Enter your username or email"
                     value={usernameOrEmail}
                     onChange={(e) => setUsernameOrEmail(e.target.value)}
-                    className="pl-11 h-12 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-11 h-12 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                 </div>
@@ -116,7 +116,7 @@ const Login: React.FC = () => {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-11 pr-12 h-12 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-11 pr-12 h-12 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                   <button
@@ -133,7 +133,7 @@ const Login: React.FC = () => {
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button
                 type="submit"
-                className="w-full h-12 bg-black hover:bg-black text-white font-medium rounded-lg transition-colors"
+                className="w-full h-12 bg-primary-400 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors"
                 disabled={isLoading}
               >
                 {isLoading ? (

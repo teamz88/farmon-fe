@@ -169,7 +169,7 @@ const MagicLinkSetPassword: React.FC = () => {
       case 2:
         return 'bg-yellow-500';
       case 3:
-        return 'bg-blue-500';
+        return 'bg-primary-500';
       case 4:
       case 5:
         return 'bg-green-500';
@@ -197,10 +197,10 @@ const MagicLinkSetPassword: React.FC = () => {
 
   if (isValidating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+            <Loader className="w-8 h-8 text-primary-500 animate-spin mb-4" />
             <p className="text-gray-600">Validating magic link...</p>
           </CardContent>
         </Card>
@@ -210,7 +210,7 @@ const MagicLinkSetPassword: React.FC = () => {
 
   if (!isValid) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
@@ -226,7 +226,7 @@ const MagicLinkSetPassword: React.FC = () => {
           <CardFooter>
             <Button
               onClick={() => navigate('/magic-link')}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              className="w-full bg-primary-400 hover:bg-primary-500 text-white"
             >
               Request New Magic Link
             </Button>
@@ -237,10 +237,10 @@ const MagicLinkSetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-primary-400 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
@@ -272,7 +272,7 @@ const MagicLinkSetPassword: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 pr-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="Enter your password"
                   required
                 />
@@ -292,7 +292,7 @@ const MagicLinkSetPassword: React.FC = () => {
                     <span className={`font-medium ${
                       passwordStrength <= 1 ? 'text-red-500' :
                       passwordStrength === 2 ? 'text-yellow-500' :
-                      passwordStrength === 3 ? 'text-blue-500' :
+                      passwordStrength === 3 ? 'text-primary-500' :
                       'text-green-500'
                     }`}>
                       {getPasswordStrengthText()}
@@ -320,7 +320,7 @@ const MagicLinkSetPassword: React.FC = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.passwordConfirm}
                   onChange={handleInputChange}
-                  className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 pr-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="Confirm your password"
                   required
                 />
@@ -334,10 +334,10 @@ const MagicLinkSetPassword: React.FC = () => {
               </div>
             </div>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
               <div className="flex items-start space-x-2">
-                <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-700">
+                <CheckCircle className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-primary-700">
                   <p className="font-medium">Account Details:</p>
                   <p>{userData?.first_name} {userData?.last_name}</p>
                   <p>{userData?.email}</p>
@@ -350,7 +350,7 @@ const MagicLinkSetPassword: React.FC = () => {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-gradient-to-r from-green-500 to-primary-400 hover:from-green-600 hover:to-primary-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
               disabled={isLoading}
             >
               {isLoading ? (

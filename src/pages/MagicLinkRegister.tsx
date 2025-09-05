@@ -111,7 +111,7 @@ const MagicLinkRegister: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -130,11 +130,11 @@ const MagicLinkRegister: React.FC = () => {
           <CardContent className="space-y-4">
             {userData ? (
               <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <Label className="text-sm font-medium text-blue-700">Welcome, {userData.first_name}!</Label>
+                <div className="p-4 bg-primary-50 rounded-lg">
+                  <Label className="text-sm font-medium text-primary-700">Welcome, {userData.first_name}!</Label>
                   <div className="mt-2 space-y-1">
-                    <p className="text-sm text-blue-600">Username: {userData.username}</p>
-                    <p className="text-sm text-blue-600">Email: {userData.email}</p>
+                    <p className="text-sm text-primary-600">Username: {userData.username}</p>
+                    <p className="text-sm text-primary-600">Email: {userData.email}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 text-center">
@@ -161,10 +161,10 @@ const MagicLinkRegister: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
@@ -197,7 +197,7 @@ const MagicLinkRegister: React.FC = () => {
                     type="text"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                     placeholder="John"
                     required
                   />
@@ -216,7 +216,7 @@ const MagicLinkRegister: React.FC = () => {
                     type="text"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                     placeholder="Doe"
                     required
                   />
@@ -236,7 +236,7 @@ const MagicLinkRegister: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="john.doe@company.com"
                   required
                 />
@@ -255,7 +255,7 @@ const MagicLinkRegister: React.FC = () => {
                   type="text"
                   value={formData.companyName}
                   onChange={handleInputChange}
-                  className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="Your Company Ltd."
                 />
               </div>
@@ -273,7 +273,7 @@ const MagicLinkRegister: React.FC = () => {
                   type="tel"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
@@ -283,7 +283,7 @@ const MagicLinkRegister: React.FC = () => {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
               disabled={isLoading}
             >
               {isLoading ? (

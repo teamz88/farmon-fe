@@ -43,17 +43,17 @@ const TypingIndicator: React.FC = () => {
   return (
     <div className="flex justify-start">
       <div className="flex items-start gap-3 w-full max-w-4xl">
-        <div className="w-10 h-10 rounded-full bg-black overflow-hidden flex items-center justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
+        <div className="w-10 h-10 rounded-full bg-primary-400 overflow-hidden flex items-center justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
           <img src="/farmon_fav.png" alt="farmon" className="w-8 h-8" />
         </div>
-        <div className="rounded-xl px-5 py-4 shadow-sm bg-gray-100 text-gray-900 max-w-3xl">
+        <div className="rounded-xl px-5 py-4 shadow-sm bg-primary-100 text-primary-900 max-w-3xl">
           <div className="flex items-center space-x-1">
             <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
-            <span className="text-sm text-gray-500 ml-2">AI is thinking...</span>
+            <span className="text-sm text-primary-700 ml-2">AI is thinking...</span>
           </div>
         </div>
       </div>
@@ -836,7 +836,7 @@ const Chat: React.FC = () => {
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-primary-900 bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -846,10 +846,10 @@ const Chat: React.FC = () => {
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-primary-200">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-semibold text-gray-900 truncate">
+                  <h2 className="text-lg font-semibold text-primary-900 truncate">
                     {conversations.find(c => c.id === selectedConversation)?.title}
                   </h2>
                 </div>
@@ -873,15 +873,15 @@ const Chat: React.FC = () => {
                       message.message_type === 'user' ? 'flex-row-reverse' : 'flex-row'
                     }`}>
                       {message.message_type === 'assistant' && (
-                        <div className="w-10 h-10 rounded-full bg-black flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
+                        <div className="w-10 h-10 rounded-full flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
                           <img src="/farmon_fav.png" alt="Farmon" className="w-8 h-8" />
                         </div>
                       )}
                       <div
                         className={`rounded-xl px-5 py-4 shadow-sm ${
                           message.message_type === 'user'
-                            ? 'bg-primary max-w-2xl'
-                            : 'bg-gray-100 text-gray-900 max-w-3xl'
+                            ? 'bg-primary-400 text-white max-w-2xl'
+                            : 'bg-primary-100 text-primary-900 max-w-3xl'
                         }`}
                       >
                         {editingMessageId === message.id ? (
@@ -889,7 +889,7 @@ const Chat: React.FC = () => {
                             <textarea
                               value={editingContent}
                               onChange={(e) => setEditingContent(e.target.value)}
-                              className="w-full p-2 border border-gray-300 rounded text-base text-gray-900 resize-none"
+                              className="w-full p-2 border border-primary-300 rounded text-base text-primary-900 resize-none"
                               rows={3}
                               autoFocus
                             />
@@ -897,13 +897,13 @@ const Chat: React.FC = () => {
                               <button
                                 onClick={saveEditAndResend}
                                 disabled={!editingContent.trim() || loading}
-                                className="px-3 py-1 bg-gray-200 text-black rounded text-xs hover:bg-primary-700 disabled:opacity-50"
+                                className="px-3 py-1 bg-primary-400 text-white rounded text-xs hover:bg-primary-500 disabled:opacity-50"
                               >
                                 <Send className="w-3 h-3" />
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                                className="px-3 py-1 bg-primary-500 text-white rounded text-xs hover:bg-primary-600"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -912,14 +912,14 @@ const Chat: React.FC = () => {
                         ) : (
                           <>
                             {message.message_type === 'assistant' ? (
-                              <div className="text-gray-900 text-base leading-relaxed markdown-content">
+                              <div className="text-primary-900 text-base leading-relaxed markdown-content">
                                 {message.isHtml ? (
                                    <div 
                                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(message.content) }}
-                                     className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-code:text-blue-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-100 prose-pre:border prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic"
+                                     className="prose prose-sm max-w-none prose-headings:text-primary-900 prose-p:text-primary-800 prose-strong:text-primary-900 prose-code:text-primary-600 prose-code:bg-primary-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-primary-100 prose-pre:border prose-blockquote:border-l-4 prose-blockquote:border-primary-300 prose-blockquote:pl-4 prose-blockquote:italic"
                                    />
                                  ) : (
-                                  <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-strong:font-bold prose-code:text-blue-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-100 prose-pre:border prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic">
+                                  <div className="prose prose-sm max-w-none prose-headings:text-primary-900 prose-p:text-primary-800 prose-strong:text-primary-900 prose-strong:font-bold prose-code:text-primary-600 prose-code:bg-primary-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-primary-100 prose-pre:border prose-blockquote:border-l-4 prose-blockquote:border-primary-300 prose-blockquote:pl-4 prose-blockquote:italic">
                                     <ReactMarkdown
                                       remarkPlugins={[remarkGfm]}
                                       rehypePlugins={[rehypeHighlight]}
@@ -935,8 +935,8 @@ const Chat: React.FC = () => {
                             
                             {/* Sources section for assistant messages */}
                             {message.message_type === 'assistant' && message.sources && message.sources.length > 0 && (
-                              <div className="mt-3 pt-3 border-t border-gray-200">
-                                <p className="text-sm font-medium text-gray-700 mb-2">Sources:</p>
+                              <div className="mt-3 pt-3 border-t border-primary-200">
+                                <p className="text-sm font-medium text-primary-700 mb-2">Sources:</p>
                                 <div className="space-y-1">
                                   {message.sources.map((source, index) => {
                                     // Check if source is a URL
@@ -944,14 +944,14 @@ const Chat: React.FC = () => {
                                     const displayText = isUrl ? new URL(source).hostname : (source.split('.')[0] ?? source);
                                     
                                     return (
-                                      <div key={index} className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
-                                        <span className="text-sm text-gray-600 truncate flex-1">{displayText}</span>
+                                      <div key={index} className="flex items-center justify-between bg-primary-50 rounded-md px-3 py-2">
+                                        <span className="text-sm text-primary-600 truncate flex-1">{displayText}</span>
                                         {isUrl ? (
                                           <a
                                             href={source}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="ml-2 p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                                            className="ml-2 p-1 text-primary-500 hover:text-primary-700 hover:bg-primary-100 rounded transition-colors"
                                             title={`Open ${source}`}
                                           >
                                             <Link2Icon className="w-4 h-4" />
@@ -965,7 +965,7 @@ const Chat: React.FC = () => {
                                               link.target = '_blank';
                                               link.click();
                                             }}
-                                            className="ml-2 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                            className="ml-2 p-1 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded transition-colors"
                                             title={`Download ${source}`}
                                           >
                                             <LinkIcon className="w-4 h-4" />
@@ -980,7 +980,7 @@ const Chat: React.FC = () => {
                             
                             <p
                               className={`text-sm mt-2 opacity-70 ${
-                                message.message_type === 'user' ? 'text-primary-100' : 'text-gray-500'
+                                message.message_type === 'user' ? 'text-primary-100' : 'text-primary-500'
                               }`}
                             >
                               {formatDate(message.created_at)}
@@ -989,7 +989,7 @@ const Chat: React.FC = () => {
                         )}
                       </div>
                       {message.message_type === 'user' && (
-                        <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white text-base font-medium flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-base font-medium flex-shrink-0">
                           <User2Icon/>
                         </div>
                       )}
@@ -1002,7 +1002,7 @@ const Chat: React.FC = () => {
                       }`}>
                         <button
                           onClick={() => message.message_type === 'assistant' ? copyMessageAsHTML(message) : copyMessageAsMarkdown(message)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                          className="p-1.5 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
                           title={message.message_type === 'assistant' ? "Copy styled content" : "Copy message"}
                         >
                           {copiedMessageId === message.id ? (
@@ -1014,7 +1014,7 @@ const Chat: React.FC = () => {
                         
                         <button
                           onClick={() => shareMessage(message)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                          className="p-1.5 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
                           title={message.message_type === 'assistant' ? "Share styled content" : "Share message"}
                         >
                           <Share className="w-4 h-4" />
@@ -1023,7 +1023,7 @@ const Chat: React.FC = () => {
                         {message.message_type === 'assistant' && (
                           <button
                             onClick={() => shareToGmail(message)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            className="p-1.5 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
                             title="Copy styled content and share via Gmail"
                           >
                             <MailIcon className="w-4 h-4" />
@@ -1033,7 +1033,7 @@ const Chat: React.FC = () => {
                         {message.message_type === 'user' && (
                           <button
                             onClick={() => startEditMessage(message)}
-                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                            className="p-1.5 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-md transition-colors"
                             title="Edit and resend"
                           >
                             <Edit className="w-4 h-4" />
@@ -1049,7 +1049,7 @@ const Chat: React.FC = () => {
                                 if (lastUserMessage) regenerateResponse(lastUserMessage);
                               }}
                               disabled={loading}
-                              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+                              className="p-1.5 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-50"
                               title="Regenerate response"
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -1062,7 +1062,7 @@ const Chat: React.FC = () => {
                               className={`p-1.5 rounded-md transition-colors ${
                                 feedbackSubmitted.has(message.id)
                                   ? 'text-success bg-success-50'
-                                  : 'text-gray-400 hover:text-success hover:bg-success-50'
+                                  : 'text-primary-400 hover:text-success hover:bg-success-50'
                               } disabled:cursor-not-allowed`}
                               title="Helpful"
                             >
@@ -1075,7 +1075,7 @@ const Chat: React.FC = () => {
                               className={`p-1.5 rounded-md transition-colors ${
                                 feedbackSubmitted.has(message.id)
                                   ? 'text-error bg-error-50'
-                                  : 'text-gray-400 hover:text-error hover:bg-error-50'
+                                  : 'text-primary-400 hover:text-error hover:bg-error-50'
                               } disabled:cursor-not-allowed`}
                               title="Not helpful"
                             >
@@ -1096,10 +1096,10 @@ const Chat: React.FC = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-2 sm:p-4 border-t border-gray-200">
+            <div className="p-2 sm:p-4 border-t border-primary-200">
                 <div className="flex gap-2">
                  <textarea
-                   className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                   className="flex-1 resize-none rounded-lg border border-primary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-primary-100 disabled:cursor-not-allowed"
                    rows={1}
                    value={newMessage}
                    onChange={(e) => setNewMessage(e.target.value)}
@@ -1116,7 +1116,7 @@ const Chat: React.FC = () => {
                  <button
                    onClick={sendMessage}
                    disabled={loading}
-                   className="px-3 py-2 bg-gray-900 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                   className="px-3 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                  >
                    <SendIcon className="w-4 h-4" />
                  </button>
@@ -1127,7 +1127,7 @@ const Chat: React.FC = () => {
           <div className="flex flex-col items-center justify-center h-full p-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="mb-8 p-3 rounded-lg bg-primary text-white hover:bg-primary-700 transition-colors lg:hidden"
+              className="mb-8 p-3 rounded-lg bg-primary-400 text-white hover:bg-primary-500 transition-colors lg:hidden"
             >
               <MenuIcon className="w-5 h-5" />
             </button>
@@ -1136,8 +1136,8 @@ const Chat: React.FC = () => {
             <div className="w-full max-w-2xl mx-auto">
               <div className="text-center mb-8">
                 <img src='/farmon_fav.png' alt='logo' className='w-20 h-20 mx-auto rounded-2xl mb-5'/>
-                <h1 className="text-3xl font-semibold text-gray-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! Ready to boost your growth. What can I do for you today?</h1>
-                <p className="text-gray-600">Start a conversation below</p>
+                <h1 className="text-3xl font-semibold text-primary-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! Ready to boost your growth. What can I do for you today?</h1>
+                <p className="text-primary-600">Start a conversation below</p>
               </div>
               
               {/* Centered input */}
@@ -1152,7 +1152,7 @@ const Chat: React.FC = () => {
                     }
                   }}
                   placeholder="Type your message..."
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 pr-12 border border-primary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
                   rows={1}
                   disabled={loading}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -1160,7 +1160,7 @@ const Chat: React.FC = () => {
                 <button
                   onClick={sendMessage}
                   disabled={loading}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors"
                 >
                   <SendIcon className="w-4 h-4" />
                 </button>
@@ -1174,15 +1174,15 @@ const Chat: React.FC = () => {
 
       {/* Feedback Modal */}
       {feedbackModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-primary-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold mb-4">Provide Feedback</h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-primary-600 mb-4">
               Please tell us why this response wasn't helpful:
             </p>
             <div className="mb-4">
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-primary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
                 placeholder="Enter your feedback..."
                 value={feedbackReason}
                 onChange={(e) => setFeedbackReason(e.target.value)}
@@ -1193,14 +1193,14 @@ const Chat: React.FC = () => {
             <div className="flex justify-end gap-2">
               <button
                 onClick={closeFeedbackModal}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="px-4 py-2 text-primary-600 hover:text-primary-800 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submitNegativeFeedback}
                 disabled={!feedbackReason.trim()}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 transition-colors disabled:bg-primary-300 disabled:cursor-not-allowed"
               >
                 Submit
               </button>

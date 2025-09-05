@@ -47,8 +47,8 @@ interface StatCardProps {
 
 const getColorClasses = (color: string) => {
   const colorMap = {
-    primary: 'bg-blue-100 text-blue-600',
-    secondary: 'bg-purple-100 text-purple-600',
+    primary: 'bg-primary-100 text-primary-600',
+    secondary: 'bg-secondary-100 text-secondary-600',
     success: 'bg-green-100 text-green-600',
     error: 'bg-red-100 text-red-600',
     warning: 'bg-yellow-100 text-yellow-600',
@@ -59,8 +59,8 @@ const getColorClasses = (color: string) => {
 
 const getTextColorClasses = (color: string) => {
   const colorMap = {
-    primary: 'text-blue-600',
-    secondary: 'text-purple-600',
+    primary: 'text-primary-600',
+    secondary: 'text-secondary-600',
     success: 'text-green-600',
     error: 'text-red-600',
     warning: 'text-yellow-600',
@@ -182,7 +182,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-100 p-8 mb-8 hover:shadow-xl transition-shadow duration-300">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           <div className="flex items-center space-x-4">
-            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
               {(user_info.full_name || user_info.username).charAt(0).toUpperCase()}
             </div>
             <div>
@@ -207,7 +207,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
               getSubscriptionStatusColor(user_info.subscription_status) === 'success' ? 'bg-green-100 text-green-800' :
               getSubscriptionStatusColor(user_info.subscription_status) === 'error' ? 'bg-red-100 text-red-800' :
               getSubscriptionStatusColor(user_info.subscription_status) === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-              getSubscriptionStatusColor(user_info.subscription_status) === 'info' ? 'bg-blue-100 text-blue-800' :
+              getSubscriptionStatusColor(user_info.subscription_status) === 'info' ? 'bg-primary-100 text-primary-800' :
               'bg-gray-100 text-gray-800'
             }`}>
               

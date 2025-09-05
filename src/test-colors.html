@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: "#fdf7f0",
+                            100: "#faeee1",
+                            200: "#f4dac2",
+                            300: "#edc199",
+                            400: "#e5a06d",
+                            500: "#de8a4a",
+                            600: "#d0743c",
+                            700: "#ad5d33",
+                            800: "#8a4a30",
+                            900: "#703d29",
+                            950: "#3c1e14",
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-6">Primary Color Test</h1>
+    
+    <div class="space-y-4">
+        <div class="bg-primary-400 text-white p-4 rounded">Primary 400 Background</div>
+        <div class="bg-primary-500 text-white p-4 rounded">Primary 500 Background</div>
+        <div class="text-primary-400 p-4 border rounded">Primary 400 Text</div>
+        <div class="border-primary-400 border-2 p-4 rounded">Primary 400 Border</div>
+        
+        <button class="bg-primary-400 hover:bg-primary-500 text-white px-4 py-2 rounded transition-colors">
+            Test Button
+        </button>
+    </div>
+    
+    <div class="mt-8">
+        <h2 class="text-lg font-semibold mb-4">Color Values:</h2>
+        <ul class="space-y-2">
+            <li>Primary 400: #e5a06d</li>
+            <li>Primary 500: #de8a4a</li>
+        </ul>
+    </div>
+</body>
+</html>

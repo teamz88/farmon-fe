@@ -297,19 +297,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const drawer = (
-    <div className={`sidebar-container bg-black border-r border-gray-800 z-50 ${
+    <div className={`sidebar-container bg-gray-50 border-r border-primary-200 z-50 ${
       isMobile ? 'w-full' : ''
     }`}>
-      <div className={`flex items-center justify-between h-16 border-b border-gray-800 backdrop-blur-md ${isMobile ? 'px-6 border-gray-800' : 'px-4'
+      <div className={`flex items-center justify-between h-16 border-b border-primary-200 backdrop-blur-md ${isMobile ? 'px-6 border-primary-200' : 'px-4'
         }`}>
-        <h1 className={`font-semibold text-white truncate flex items-center justify-center gap-2 ${isMobile ? 'text-xl font-bold' : 'text-lg'
+        <h1 className={`font-semibold text-primary-800 truncate flex items-center justify-center gap-2 ${isMobile ? 'text-xl font-bold' : 'text-lg'
           }`}>
           <img src='/farmon.png' alt='logo' className='w-full h-14' />
         </h1>
         {isMobile && (
           <button
             onClick={handleDrawerToggle}
-            className="p-2 rounded-md text-white hover:text-gray-500 hover:bg-gray-100"
+            className="p-2 rounded-md text-primary-800 hover:text-primary-600 hover:bg-primary-100"
           >
             <CloseIcon className="h-5 w-5" />
           </button>
@@ -320,7 +320,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="px-2 mb-4">
           <button
             onClick={handleNewChat}
-            className="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-lg transition-colors shadow-lg"
+            className="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-lg transition-colors shadow-lg"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             New Chat
@@ -332,9 +332,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <li key={item.text}>
               <button
                 onClick={() => handleNavigation(item.path)}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${location.pathname === item.path
-                    ? 'bg-gray-700 text-white'
-                    : 'text-white hover:bg-gray-100 hover:text-gray-900'
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  location.pathname === item.path
+                    ? 'bg-primary-400 text-white'
+                    : 'text-primary-800 hover:bg-primary-100 hover:text-primary-900'
                   }`}
               >
                 <span className="mr-3">{item.icon}</span>
@@ -347,14 +348,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Conversations Section - show on all pages */}
         <div className="mt-6">
           <div className="px-2 mb-2 flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <h3 className="text-xs font-semibold text-primary-600 uppercase tracking-wider">
               Conversations
             </h3>
           </div>
           <div className="px-2 mb-4">
             <button
               onClick={() => setNewFolderDialog(true)}
-              className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-lg transition-colors shadow-lg"
+              className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-lg transition-colors shadow-lg"
             >
               <FolderPlusIcon className="h-5 w-5 mr-2" />
               New project
@@ -369,7 +370,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               return (
                 <div key={folder.id} className="mb-2 relative group">
                   {editingFolderId === folder.id ? (
-                    <div className="flex items-center gap-1 px-2 py-2 bg-gray-700 rounded">
+                    <div className="flex items-center gap-1 px-2 py-2 bg-primary-100 rounded">
                       <FolderIcon
                         className="h-4 w-4"
                         style={{ color: editingFolderColor }}
@@ -378,7 +379,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         type="text"
                         value={editingFolderName}
                         onChange={(e) => setEditingFolderName(e.target.value)}
-                        className="flex-1 bg-gray-600 text-white px-2 py-1 rounded text-sm"
+                        className="flex-1 bg-primary-200 text-primary-900 px-2 py-1 rounded text-sm"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -390,14 +391,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       />
                       <button
                         onClick={saveEditedFolder}
-                        className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                         title="Save"
                       >
                         <CheckIcon className="h-3 w-3" />
                       </button>
                       <button
                         onClick={cancelEditingFolder}
-                        className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                         title="Cancel"
                       >
                         <XMarkIcon className="h-3 w-3" />
@@ -407,10 +408,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <>
                       <button
                         onClick={() => toggleFolderExpansion(folder.id)}
-                        className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-gray-300 rounded transition-colors ${
+                        className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-primary-700 rounded transition-colors ${
                           dragOverFolder === folder.id 
-                            ? 'bg-blue-600 hover:bg-blue-700' 
-                            : 'hover:bg-gray-700'
+                            ? 'bg-primary-400 hover:bg-primary-500' 
+                            : 'hover:bg-primary-100'
                         }`}
                         onDragOver={(e) => {
                           if (draggedConversation) {
@@ -451,7 +452,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             e.stopPropagation();
                             startEditingFolder(folder);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-blue-400 hover:text-blue-300 hover:bg-gray-600 rounded transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-1 text-primary-600 hover:text-primary-500 hover:bg-primary-200 rounded transition-all"
                           title="Edit folder"
                         >
                           <EditIcon className="h-3 w-3" />
@@ -463,7 +464,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                               deleteFolder(folder.id);
                             }
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 hover:bg-gray-600 rounded transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-1 text-primary-600 hover:text-primary-500 hover:bg-primary-200 rounded transition-all"
                           title="Delete folder"
                         >
                           <DeleteIcon className="h-3 w-3" />
@@ -482,7 +483,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           }));
                           window.location.href = `/chat?folder=${folder.id}`;
                         }}
-                        className="w-full flex items-center gap-2 px-2 py-1 mb-2 text-xs text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                        className="w-full flex items-center gap-2 px-2 py-1 mb-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded transition-colors"
                       >
                         <PlusIcon className="h-3 w-3" />
                         New chat in {folder.name}
@@ -492,8 +493,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           key={conversation.id}
                           className={`relative group mb-2 rounded-md transition-colors ${
                             draggedConversation === conversation.id 
-                              ? 'bg-gray-600 opacity-50' 
-                              : 'bg-gray-800 hover:bg-gray-700'
+                              ? 'bg-primary-200 opacity-50' 
+                              : 'bg-primary-50 hover:bg-primary-100'
                           }`}
                           draggable
                           onDragStart={(e) => {
@@ -516,7 +517,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 setMobileOpen(false);
                               }
                             }}
-                            className="w-full text-left p-3 rounded-md transition-colors"
+                            className="w-full text-left p-3 rounded-md transition-colors hover:bg-primary-100"
                             disabled={editingConversationId === conversation.id}
                           >
                             <div className="flex items-center gap-2 mb-1">
@@ -533,22 +534,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                       cancelEditingTitle(e as any);
                                     }
                                   }}
-                                  className="flex-1 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                                  className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
                                   autoFocus
                                 />
                               ) : (
-                                <h4 className="text-sm font-medium text-white truncate flex-1">
+                                <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
                                   {conversation.title}
                                 </h4>
                               )}
-                              {conversation.is_pinned && <PinIcon className="h-3 w-3 text-gray-400" />}
-                              {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-gray-400" />}
+                              {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
+                              {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-primary-600">
                                 {formatDate(conversation.updated_at)}
                               </span>
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
                                 {conversation.message_count}
                               </span>
                             </div>
@@ -562,7 +563,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                     e.stopPropagation();
                                     saveEditedTitle(conversation.id, e as any);
                                   }}
-                                  className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                                  className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                                   title="Save"
                                 >
                                   <CheckIcon className="h-3 w-3" />
@@ -572,7 +573,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                     e.stopPropagation();
                                     cancelEditingTitle(e as any);
                                   }}
-                                  className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                                  className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                                   title="Cancel"
                                 >
                                   <XMarkIcon className="h-3 w-3" />
@@ -581,7 +582,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             ) : (
                               <button
                                 onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
-                                className="p-1 text-gray-400 hover:text-gray-300 hover:bg-gray-600 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title="More options"
                               >
                                 <MoreVerticalIcon className="h-3 w-3" />
@@ -598,7 +599,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Root conversations (not in any folder) */}
             <div
-              className={`${draggedConversation ? 'min-h-[40px] border-2 border-dashed border-gray-600 rounded-md mb-2' : ''}`}
+              className={`${draggedConversation ? 'min-h-[40px] border-2 border-dashed border-primary-300 rounded-md mb-2' : ''}`}
               onDragOver={(e) => {
                 if (draggedConversation) {
                   e.preventDefault();
@@ -618,8 +619,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   key={conversation.id}
                   className={`relative group mb-2 rounded-md transition-colors ${
                     draggedConversation === conversation.id 
-                      ? 'bg-gray-600 opacity-50' 
-                      : 'bg-gray-800 hover:bg-gray-700'
+                      ? 'bg-primary-200 opacity-50' 
+                      : 'bg-primary-50 hover:bg-primary-100'
                   }`}
                   draggable
                   onDragStart={(e) => {
@@ -642,7 +643,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       setMobileOpen(false);
                     }
                   }}
-                  className="w-full text-left p-3 rounded-md transition-colors"
+                  className="w-full text-left p-3 rounded-md transition-colors hover:bg-primary-100"
                   disabled={editingConversationId === conversation.id}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -659,22 +660,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             cancelEditingTitle(e as any);
                           }
                         }}
-                        className="flex-1 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
                         autoFocus
                       />
                     ) : (
-                      <h4 className="text-sm font-medium text-white truncate flex-1">
+                      <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
                         {conversation.title}
                       </h4>
                     )}
-                    {conversation.is_pinned && <PinIcon className="h-3 w-3 text-gray-400" />}
-                    {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-gray-400" />}
+                    {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
+                    {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-primary-600">
                       {formatDate(conversation.updated_at)}
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
                       {conversation.message_count}
                     </span>
                   </div>
@@ -688,7 +689,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           e.stopPropagation();
                           saveEditedTitle(conversation.id, e as any);
                         }}
-                        className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                         title="Save"
                       >
                         <CheckIcon className="h-3 w-3" />
@@ -698,7 +699,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           e.stopPropagation();
                           cancelEditingTitle(e as any);
                         }}
-                        className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
                         title="Cancel"
                       >
                         <XMarkIcon className="h-3 w-3" />
@@ -708,7 +709,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <>
                       <button
                         onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
-                        className="p-1 text-gray-400 hover:text-gray-300 hover:bg-gray-600 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
                         title="More options"
                       >
                         <MoreVerticalIcon className="h-3 w-3" />
@@ -733,7 +734,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           : 'opacity-0 invisible'
         }`}>
         <div
-          className="fixed inset-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-gradient-to-br from-primary-900/80 via-primary-800/70 to-primary-900/80 backdrop-blur-sm"
           onClick={handleDrawerToggle}
         />
         <div className={`relative flex-1 flex flex-col w-full h-full bg-transparent transition-transform duration-500 ease-in-out ${isMobile && mobileOpen
@@ -758,12 +759,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {isMobile && (
                 <button
                   onClick={handleDrawerToggle}
-                  className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2"
+                  className="p-2 rounded-md text-primary-600 hover:text-primary-700 hover:bg-primary-100 mr-2"
                 >
                   <MenuIcon className="h-6 w-6" />
                 </button>
               )}
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-primary-900">
 
               </h1>
             </div>
@@ -772,7 +773,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {location.pathname === '/chat' && (
                 <button
                   onClick={handleNewChat}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-700 transition-colors"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-400 rounded-md hover:bg-primary-500 transition-colors"
                 >
                   <PlusIcon className="h-4 w-4 mr-1" />
                   New Chat
@@ -784,7 +785,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   await logout();
                   navigate('/login');
                 }}
-                className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                className="p-2 rounded-md text-primary-600 hover:text-primary-700 hover:bg-primary-100"
                 aria-label="logout"
               >
                 <LogoutIcon className="h-6 w-6" />
@@ -809,7 +810,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="mb-4">
               <input
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 placeholder="Folder Name"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
@@ -823,7 +824,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <button
                     key={color}
                     onClick={() => setNewFolderColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${newFolderColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${newFolderColor === color ? 'border-primary-400 scale-110' : 'border-gray-300'
                       }`}
                     style={{ backgroundColor: color }}
                   />
@@ -843,7 +844,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
               <button
                 onClick={createFolder}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 transition-colors"
               >
                 Create
               </button>

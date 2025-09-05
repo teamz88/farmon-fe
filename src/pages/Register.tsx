@@ -119,7 +119,7 @@ const Register: React.FC = () => {
       <div className="relative z-10 w-full max-w-lg">
         {/* Logo/Brand section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center overflow-hidden bg-black rounded-xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center overflow-hidden bg-primary-400 rounded-xl mb-4 shadow-lg">
             <img src='/farmon.png' alt='logo' className='w-full h-16'/>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -163,7 +163,7 @@ const Register: React.FC = () => {
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                      className="pl-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                       required
                     />
                   </div>
@@ -182,7 +182,7 @@ const Register: React.FC = () => {
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                      className="pl-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                       required
                     />
                   </div>
@@ -203,7 +203,7 @@ const Register: React.FC = () => {
                     placeholder="johndoe"
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                 </div>
@@ -223,7 +223,7 @@ const Register: React.FC = () => {
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                 </div>
@@ -243,7 +243,7 @@ const Register: React.FC = () => {
                     placeholder="+1 (555) 123-4567"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                   />
                 </div>
               </div>
@@ -262,7 +262,7 @@ const Register: React.FC = () => {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                   <button
@@ -306,7 +306,7 @@ const Register: React.FC = () => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-gray-900"
+                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-400"
                     required
                   />
                   <button
@@ -340,7 +340,7 @@ const Register: React.FC = () => {
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-black hover:bg-gray-900 text-white font-medium rounded-lg transition-colors" 
+                className="w-full h-12 bg-primary-400 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors" 
                 disabled={isLoading}
               >
                 {isLoading ? (

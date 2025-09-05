@@ -163,8 +163,8 @@ const ComprehensiveDashboard: React.FC = () => {
          {
            label: 'Total Users',
            data: dashboardStats.user_growth_chart?.map(item => item.total_users) || [],
-           borderColor: 'rgb(59, 130, 246)',
-           backgroundColor: 'rgba(59, 130, 246, 0.1)',
+           borderColor: 'rgb(229, 160, 109)',
+           backgroundColor: 'rgba(229, 160, 109, 0.1)',
            tension: 0.4,
            fill: true,
          },
@@ -182,8 +182,8 @@ const ComprehensiveDashboard: React.FC = () => {
          {
            label: 'Questions Asked',
            data: dashboardStats.activity_chart?.map(item => item.questions) || [],
-           borderColor: 'rgb(59, 130, 246)',
-           backgroundColor: 'rgba(59, 130, 246, 0.1)',
+           borderColor: 'rgb(229, 160, 109)',
+           backgroundColor: 'rgba(229, 160, 109, 0.1)',
            tension: 0.4,
            fill: true,
          },
@@ -201,8 +201,8 @@ const ComprehensiveDashboard: React.FC = () => {
         {
           label: 'Daily Revenue',
           data: dashboardStats.revenue_chart?.map(item => item.revenue) || [],
-          borderColor: 'rgb(168, 85, 247)',
-          backgroundColor: 'rgba(168, 85, 247, 0.1)',
+          borderColor: 'rgb(139, 92, 246)',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)',
           tension: 0.4,
           fill: true,
         },
@@ -330,7 +330,7 @@ const ComprehensiveDashboard: React.FC = () => {
         </div>
         <button
           onClick={handleManualRefresh}
-          className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-black text-white rounded-lg hover:bg-black transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
+          className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
           disabled={statsLoading}
         >
           <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} />
@@ -344,7 +344,7 @@ const ComprehensiveDashboard: React.FC = () => {
           title="Total Users"
           value={formatNumber(dashboardStats?.total_users || 0)}
           icon={<Users className="w-6 h-6" />}
-          color="#3B82F6"
+          color="#e5a06d"
           loading={statsLoading}
         />
         <StatCard
@@ -412,7 +412,7 @@ const ComprehensiveDashboard: React.FC = () => {
           title="Total Messages"
           value={formatNumber(dashboardStats?.total_messages || 0)}
           icon={<MessageSquare className="w-6 h-6" />}
-          color="#8B5CF6"
+          color="#8b5cf6"
           subtitle="All time"
           loading={statsLoading}
         />
