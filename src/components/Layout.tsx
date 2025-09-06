@@ -61,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
-  const { conversations, folders, loadConversations, loadFolders, refreshData } = useChatContext();
+  const { conversations, folders, loadConversations, loadFolders, refreshData, loading } = useChatContext();
   
   const isAdmin = user?.role === 'admin';
   const menuItems = allMenuItems.filter(item => !item.adminOnly || isAdmin);
@@ -79,14 +79,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
     };
     
-    // Handle scroll to close menu
     const handleScroll = () => {
       if (conversationMenuOpen) {
         handleConversationMenuClose();
       }
     };
     
-    // Handle escape key to close menu
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && conversationMenuOpen) {
         handleConversationMenuClose();
@@ -104,57 +102,52 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [conversationMenuOpen, conversationMenuPosition]);
 
-  // loadConversations and loadFolders are now provided by ChatContext
-
-
-
   const createFolder = async () => {
     if (!newFolderName.trim()) return;
-
+    
     try {
       await chatApi.createFolder({
         name: newFolderName.trim(),
         color: newFolderColor
       });
+      setNewFolderDialog(false);
       setNewFolderName('');
       setNewFolderColor('#6B7280');
-      setNewFolderDialog(false);
       await loadFolders();
     } catch (error) {
-      console.error('Failed to create folder:', error);
+      console.error('Error creating folder:', error);
     }
   };
 
   const deleteFolder = async (folderId: string) => {
     try {
       await chatApi.deleteFolder(folderId);
-      await loadFolders();
-      await loadConversations();
+      await refreshData();
     } catch (error) {
-      console.error('Failed to delete folder:', error);
+      console.error('Error deleting folder:', error);
     }
   };
 
   const startEditingFolder = (folder: Folder) => {
     setEditingFolderId(folder.id);
     setEditingFolderName(folder.name);
-    setEditingFolderColor(folder.color || '#6B7280');
+    setEditingFolderColor(folder.color);
   };
 
   const saveEditedFolder = async () => {
-    if (!editingFolderId) return;
+    if (!editingFolderId || !editingFolderName.trim()) return;
     
     try {
       await chatApi.updateFolder(editingFolderId, {
-        name: editingFolderName,
+        name: editingFolderName.trim(),
         color: editingFolderColor
       });
-      await refreshData();
       setEditingFolderId(null);
       setEditingFolderName('');
       setEditingFolderColor('#6B7280');
+      await loadFolders();
     } catch (error) {
-      console.error('Failed to update folder:', error);
+      console.error('Error updating folder:', error);
     }
   };
 
@@ -165,15 +158,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const toggleFolderExpansion = (folderId: string) => {
-    setExpandedFolders(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(folderId)) {
-        newSet.delete(folderId);
-      } else {
-        newSet.add(folderId);
-      }
-      return newSet;
-    });
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folderId)) {
+      newExpanded.delete(folderId);
+    } else {
+      newExpanded.add(folderId);
+    }
+    setExpandedFolders(newExpanded);
   };
 
   const getConversationsByFolder = (folderId: string | null) => {
@@ -181,28 +172,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const handleConversationMenuOpen = (conversationId: string, event: React.MouseEvent) => {
+    event.preventDefault();
     event.stopPropagation();
+    
     const rect = event.currentTarget.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const menuWidth = 200; // Approximate menu width
-    const menuHeight = 300; // Approximate menu height
+    const menuWidth = 200;
+    const menuHeight = 300;
     
-    // Calculate optimal position
-    let x = rect.right - 10;
-    let y = rect.top + 10;
+    let x = rect.right + 10;
+    let y = rect.top;
     
-    // Adjust horizontal position if menu would overflow viewport
-    if (x + menuWidth > viewportWidth) {
-      x = rect.left - menuWidth + 10; // Position to the left of the button
+    if (x + menuWidth > window.innerWidth) {
+      x = rect.left - menuWidth - 10;
     }
     
-    // Adjust vertical position if menu would overflow viewport
-    if (y + menuHeight > viewportHeight) {
-      y = rect.bottom - menuHeight - 10; // Position above the button
-      if (y < 0) {
-        y = Math.max(10, viewportHeight - menuHeight - 10); // Ensure it stays within viewport
-      }
+    if (y + menuHeight > window.innerHeight) {
+      y = window.innerHeight - menuHeight - 10;
     }
     
     setConversationMenuPosition({ x, y });
@@ -216,26 +201,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const moveConversationToFolder = async (conversationId: string | null, folderId: string | null) => {
     if (!conversationId) return;
-
+    
     try {
-      await chatApi.moveConversationToFolder(conversationId, { folder_id: folderId });
+      await chatApi.updateConversation(conversationId, { folder: folderId });
       await loadConversations();
       handleConversationMenuClose();
     } catch (error) {
-      console.error('Failed to move conversation:', error);
+      console.error('Error moving conversation:', error);
     }
   };
 
   const deleteConversation = async (conversationId: string) => {
-    if (!conversationId) return;
-
     try {
       await chatApi.deleteConversation(conversationId);
-      window.location.href = '/chat'
       await loadConversations();
       handleConversationMenuClose();
+      
+      if (location.pathname === `/chat/${conversationId}`) {
+        navigate('/chat');
+      }
     } catch (error) {
-      console.error('Failed to delete conversation:', error);
+      console.error('Error deleting conversation:', error);
     }
   };
 
@@ -244,7 +230,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+    
     if (diffDays === 1) return 'Today';
     if (diffDays === 2) return 'Yesterday';
     if (diffDays <= 7) return `${diffDays - 1} days ago`;
@@ -252,11 +238,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const handleNewChat = () => {
-    // Always dispatch clear conversation event first
-    window.dispatchEvent(new CustomEvent('clearConversation'));
-    
-    // If already on chat page, force a re-render by navigating with a timestamp
-    window.location.href = '/chat'
+    const event = new CustomEvent('newChat');
+    window.dispatchEvent(event);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
   };
 
   const startEditingTitle = (conversation: Conversation, e: React.MouseEvent) => {
@@ -268,14 +254,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const saveEditedTitle = async (conversationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!editingTitle.trim()) return;
-
+    
     try {
-      await chatApi.updateConversation(conversationId, { title: editingTitle });
+      await chatApi.updateConversation(conversationId, { title: editingTitle.trim() });
       setEditingConversationId(null);
       setEditingTitle('');
       await loadConversations();
     } catch (error) {
-      console.error('Failed to update conversation title:', error);
+      console.error('Error updating conversation title:', error);
     }
   };
 
@@ -300,10 +286,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className={`sidebar-container bg-gray-50 border-r border-primary-200 z-50 ${
       isMobile ? 'w-full' : ''
     }`}>
-      <div className={`flex items-center justify-between h-16 border-b border-primary-200 backdrop-blur-md ${isMobile ? 'px-6 border-primary-200' : 'px-4'
+      <div className={`flex items-center justify-between h-16 border-b border-primary-200 backdrop-blur-md ${
+        isMobile ? 'px-6 border-primary-200' : 'px-4'
+      }`}>
+        <h1 className={`font-semibold text-primary-800 truncate flex items-center justify-center gap-2 ${
+          isMobile ? 'text-xl font-bold' : 'text-lg'
         }`}>
-        <h1 className={`font-semibold text-primary-800 truncate flex items-center justify-center gap-2 ${isMobile ? 'text-xl font-bold' : 'text-lg'
-          }`}>
           <img src='/farmon.png' alt='logo' className='w-full h-14' />
         </h1>
         {isMobile && (
@@ -316,7 +304,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
       </div>
       <nav className="mt-4">
-        {/* New Chat Button */}
         <div className="px-2 mb-4">
           <button
             onClick={handleNewChat}
@@ -336,7 +323,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   location.pathname === item.path
                     ? 'bg-primary-400 text-white'
                     : 'text-primary-800 hover:bg-primary-100 hover:text-primary-900'
-                  }`}
+                }`}
               >
                 <span className="mr-3">{item.icon}</span>
                 {item.text}
@@ -345,7 +332,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           ))}
         </ul>
 
-        {/* Conversations Section - show on all pages */}
         <div className="mt-6">
           <div className="px-2 mb-2 flex items-center justify-between">
             <h3 className="text-xs font-semibold text-primary-600 uppercase tracking-wider">
@@ -362,385 +348,393 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
           <div className="conversations-list px-2 max-h-96 overflow-auto">
-            {/* Folders */}
-            {folders.map((folder) => {
-              const folderConversations = getConversationsByFolder(folder.id);
-              const isExpanded = expandedFolders.has(folder.id);
-
-              return (
-                <div key={folder.id} className="mb-2 relative group">
-                  {editingFolderId === folder.id ? (
-                    <div className="flex items-center gap-1 px-2 py-2 bg-primary-100 rounded">
-                      <FolderIcon
-                        className="h-4 w-4"
-                        style={{ color: editingFolderColor }}
-                      />
-                      <input
-                        type="text"
-                        value={editingFolderName}
-                        onChange={(e) => setEditingFolderName(e.target.value)}
-                        className="flex-1 bg-primary-200 text-primary-900 px-2 py-1 rounded text-sm"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            saveEditedFolder();
-                          } else if (e.key === 'Escape') {
-                            cancelEditingFolder();
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={saveEditedFolder}
-                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                        title="Save"
-                      >
-                        <CheckIcon className="h-3 w-3" />
-                      </button>
-                      <button
-                        onClick={cancelEditingFolder}
-                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                        title="Cancel"
-                      >
-                        <XMarkIcon className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => toggleFolderExpansion(folder.id)}
-                        className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-primary-700 rounded transition-colors ${
-                          dragOverFolder === folder.id 
-                            ? 'bg-primary-400 hover:bg-primary-500' 
-                            : 'hover:bg-primary-100'
-                        }`}
-                        onDragOver={(e) => {
-                          if (draggedConversation) {
-                            e.preventDefault();
-                            setDragOverFolder(folder.id);
-                          }
-                        }}
-                        onDragLeave={(e) => {
-                          // Only clear if we're leaving the button entirely
-                          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                            setDragOverFolder(null);
-                          }
-                        }}
-                        onDrop={async (e) => {
-                          e.preventDefault();
-                          if (draggedConversation) {
-                            await moveConversationToFolder(draggedConversation, folder.id);
-                            setDraggedConversation(null);
-                            setDragOverFolder(null);
-                          }
-                        }}
-                      >
-                        {isExpanded ? (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronRightIcon className="h-4 w-4" />
-                        )}
-                        <FolderIcon
-                          className="h-4 w-4"
-                          style={{ color: folder.color }}
-                        />
-                        <span className="flex-1 text-left truncate">{folder.name}</span>
-                      </button>
-
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEditingFolder(folder);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-primary-600 hover:text-primary-500 hover:bg-primary-200 rounded transition-all"
-                          title="Edit folder"
-                        >
-                          <EditIcon className="h-3 w-3" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (confirm(`Are you sure you want to delete the folder "${folder.name}" and all its conversations?`)) {
-                              deleteFolder(folder.id);
-                            }
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-primary-600 hover:text-primary-500 hover:bg-primary-200 rounded transition-all"
-                          title="Delete folder"
-                        >
-                          <DeleteIcon className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {isExpanded && (
-                    <div className="ml-6 mt-1">
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent('clearConversation'));
-                          window.dispatchEvent(new CustomEvent('setSelectedFolder', {
-                            detail: { folderId: folder.id }
-                          }));
-                          window.location.href = `/chat?folder=${folder.id}`;
-                        }}
-                        className="w-full flex items-center gap-2 px-2 py-1 mb-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded transition-colors"
-                      >
-                        <PlusIcon className="h-3 w-3" />
-                        New chat in {folder.name}
-                      </button>
-                      {folderConversations.map((conversation) => (
-                        <div
-                          key={conversation.id}
-                          className={`relative group mb-2 rounded-md transition-colors ${
-                            draggedConversation === conversation.id 
-                              ? 'bg-primary-200 opacity-50' 
-                              : 'bg-primary-50 hover:bg-primary-100'
-                          }`}
-                          draggable
-                          onDragStart={(e) => {
-                            setDraggedConversation(conversation.id);
-                            e.dataTransfer.effectAllowed = 'move';
-                          }}
-                          onDragEnd={() => {
-                            setDraggedConversation(null);
-                            setDragOverFolder(null);
-                          }}
-                        >
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              </div>
+            ) : (
+              <>
+                {folders.map((folder) => {
+                  const folderConversations = getConversationsByFolder(folder.id);
+                  const isExpanded = expandedFolders.has(folder.id);
+                  
+                  return (
+                    <div key={folder.id} className="mb-2">
+                      {editingFolderId === folder.id ? (
+                        <div className="flex items-center gap-2 p-2 bg-primary-100 rounded-md">
+                          <FolderIcon
+                            className="h-4 w-4 flex-shrink-0"
+                            style={{ color: editingFolderColor }}
+                          />
+                          <input
+                            type="text"
+                            value={editingFolderName}
+                            onChange={(e) => setEditingFolderName(e.target.value)}
+                            className="flex-1 text-sm bg-white border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                         if (e.key === 'Enter') {
+                                           saveEditedFolder();
+                                         } else if (e.key === 'Escape') {
+                                           cancelEditingFolder();
+                                         }
+                                       }}
+                          />
+                          <button
+                            onClick={saveEditedFolder}
+                            className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
+                            title="Save"
+                          >
+                            <CheckIcon className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={cancelEditingFolder}
+                            className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
+                            title="Cancel"
+                          >
+                            <XMarkIcon className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => toggleFolderExpansion(folder.id)}
+                            className={`w-full flex items-center justify-between p-2 text-sm font-medium rounded-md transition-colors hover:bg-primary-100 ${
+                              dragOverFolder === folder.id ? 'bg-primary-200' : ''
+                            }`}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              setDragOverFolder(folder.id);
+                            }}
+                            onDragLeave={() => {
+                              setDragOverFolder(null);
+                            }}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              if (draggedConversation) {
+                                await moveConversationToFolder(draggedConversation, folder.id);
+                                setDraggedConversation(null);
+                              }
+                              setDragOverFolder(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <FolderIcon
+                                className="h-4 w-4"
+                                style={{ color: folder.color }}
+                              />
+                              <span className="text-primary-800 truncate">{folder.name}</span>
+                              <span className="text-xs text-primary-600 bg-primary-200 px-1.5 py-0.5 rounded-full">
+                                {folderConversations.length}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditingFolder(folder);
+                                }}
+                                className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors"
+                                title="Edit folder"
+                              >
+                                <EditIcon className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Are you sure you want to delete this folder?')) {
+                                    deleteFolder(folder.id);
+                                  }
+                                }}
+                                className="p-1 text-red-600 hover:text-red-700 hover:bg-red-100 rounded transition-colors"
+                                title="Delete folder"
+                              >
+                                <DeleteIcon className="h-3 w-3" />
+                              </button>
+                              {isExpanded ? (
+                                <ChevronDownIcon className="h-3 w-3 text-primary-600" />
+                              ) : (
+                                <ChevronRightIcon className="h-3 w-3 text-primary-600" />
+                              )}
+                            </div>
+                          </button>
+                        </>
+                      )}
+                      
+                      {isExpanded && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {folderConversations.map((conversation) => (
+                            <div
+                              key={conversation.id}
+                              className={`relative group mb-1 rounded-md transition-colors ${
+                                draggedConversation === conversation.id 
+                                  ? 'bg-primary-200 opacity-50' 
+                                  : 'bg-primary-50 hover:bg-primary-100'
+                              }`}
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedConversation(conversation.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                              }}
+                              onDragEnd={() => {
+                                setDraggedConversation(null);
+                                setDragOverFolder(null);
+                              }}
+                            >
+                              <button
+                                onClick={() => {
+                                  navigate(`/chat/${conversation.id}`);
+                                  const event = new CustomEvent('conversationSelected', {
+                                    detail: { conversationId: conversation.id }
+                                  });
+                                  window.dispatchEvent(event);
+                                  if (isMobile) {
+                                    setMobileOpen(false);
+                                  }
+                                }}
+                                className="w-full text-left p-2 rounded-md transition-colors hover:bg-primary-100"
+                                disabled={editingConversationId === conversation.id}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  {editingConversationId === conversation.id ? (
+                                    <input
+                                      type="text"
+                                      value={editingTitle}
+                                      onChange={(e) => setEditingTitle(e.target.value)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onKeyDown={(e) => {
+                                         if (e.key === 'Enter') {
+                                           const mouseEvent = e as any;
+                                           saveEditedTitle(conversation.id, mouseEvent);
+                                         } else if (e.key === 'Escape') {
+                                           const mouseEvent = e as any;
+                                           cancelEditingTitle(mouseEvent);
+                                         }
+                                       }}
+                                      className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
+                                      {conversation.title}
+                                    </h4>
+                                  )}
+                                  {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
+                                  {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-primary-600">
+                                    {formatDate(conversation.updated_at)}
+                                  </span>
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
+                                    {conversation.message_count}
+                                  </span>
+                                </div>
+                              </button>
+                              
+                              <div className="absolute top-1 right-1 flex gap-1">
+                                {editingConversationId === conversation.id ? (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        saveEditedTitle(conversation.id, e);
+                                      }}
+                                      className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors"
+                                      title="Save"
+                                    >
+                                      <CheckIcon className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        cancelEditingTitle(e);
+                                      }}
+                                      className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors"
+                                      title="Cancel"
+                                    >
+                                      <XMarkIcon className="h-3 w-3" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
+                                      className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                      title="More options"
+                                    >
+                                      <MoreVerticalIcon className="h-3 w-3" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          
                           <button
                             onClick={() => {
-                              if (editingConversationId === conversation.id) return;
-                              navigate(`/chat?conversation=${conversation.id}`);
-                              window.dispatchEvent(new CustomEvent('conversationSelected', {
-                                detail: { conversationId: conversation.id }
-                              }));
+                              const event = new CustomEvent('newChatInFolder', {
+                                detail: { folderId: folder.id }
+                              });
+                              window.dispatchEvent(event);
                               if (isMobile) {
                                 setMobileOpen(false);
                               }
                             }}
-                            className="w-full text-left p-3 rounded-md transition-colors hover:bg-primary-100"
-                            disabled={editingConversationId === conversation.id}
+                            className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors border border-dashed border-primary-300"
                           >
-                            <div className="flex items-center gap-2 mb-1">
-                              {editingConversationId === conversation.id ? (
-                                <input
-                                  type="text"
-                                  value={editingTitle}
-                                  onChange={(e) => setEditingTitle(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                      saveEditedTitle(conversation.id, e as any);
-                                    } else if (e.key === 'Escape') {
-                                      cancelEditingTitle(e as any);
-                                    }
-                                  }}
-                                  className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
-                                  autoFocus
-                                />
-                              ) : (
-                                <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
-                                  {conversation.title}
-                                </h4>
-                              )}
-                              {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
-                              {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-primary-600">
-                                {formatDate(conversation.updated_at)}
-                              </span>
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
-                                {conversation.message_count}
-                              </span>
-                            </div>
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            New chat in {folder.name}
                           </button>
-
-                          <div className="absolute top-2 right-2 flex gap-1">
-                            {editingConversationId === conversation.id ? (
-                              <>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    saveEditedTitle(conversation.id, e as any);
-                                  }}
-                                  className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                                  title="Save"
-                                >
-                                  <CheckIcon className="h-3 w-3" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cancelEditingTitle(e as any);
-                                  }}
-                                  className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                                  title="Cancel"
-                                >
-                                  <XMarkIcon className="h-3 w-3" />
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
-                                className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                title="More options"
-                              >
-                                <MoreVerticalIcon className="h-3 w-3" />
-                              </button>
-                            )}
-                          </div>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Root conversations (not in any folder) */}
-            <div
-              className={`${draggedConversation ? 'min-h-[40px] border-2 border-dashed border-primary-300 rounded-md mb-2' : ''}`}
-              onDragOver={(e) => {
-                if (draggedConversation) {
-                  e.preventDefault();
-                }
-              }}
-              onDrop={async (e) => {
-                e.preventDefault();
-                if (draggedConversation) {
-                  await moveConversationToFolder(draggedConversation, null);
-                  setDraggedConversation(null);
-                  setDragOverFolder(null);
-                }
-              }}
-            >
-              {getConversationsByFolder(null).map((conversation) => (
+                  );
+                })}
+                
                 <div
-                  key={conversation.id}
-                  className={`relative group mb-2 rounded-md transition-colors ${
-                    draggedConversation === conversation.id 
-                      ? 'bg-primary-200 opacity-50' 
-                      : 'bg-primary-50 hover:bg-primary-100'
-                  }`}
-                  draggable
-                  onDragStart={(e) => {
-                    setDraggedConversation(conversation.id);
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                  onDragEnd={() => {
-                    setDraggedConversation(null);
+                  className={`${draggedConversation ? 'min-h-[40px] border-2 border-dashed border-primary-300 rounded-md mb-2' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
                     setDragOverFolder(null);
                   }}
-                >
-                <button
-                  onClick={() => {
-                    if (editingConversationId === conversation.id) return;
-                    navigate(`/chat?conversation=${conversation.id}`);
-                    window.dispatchEvent(new CustomEvent('conversationSelected', {
-                      detail: { conversationId: conversation.id }
-                    }));
-                    if (isMobile) {
-                      setMobileOpen(false);
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    if (draggedConversation) {
+                      await moveConversationToFolder(draggedConversation, null);
+                      setDraggedConversation(null);
                     }
                   }}
-                  className="w-full text-left p-3 rounded-md transition-colors hover:bg-primary-100"
-                  disabled={editingConversationId === conversation.id}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    {editingConversationId === conversation.id ? (
-                      <input
-                        type="text"
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            saveEditedTitle(conversation.id, e as any);
-                          } else if (e.key === 'Escape') {
-                            cancelEditingTitle(e as any);
+                  {getConversationsByFolder(null).map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className={`relative group mb-2 rounded-md transition-colors ${
+                        draggedConversation === conversation.id 
+                          ? 'bg-primary-200 opacity-50' 
+                          : 'bg-primary-50 hover:bg-primary-100'
+                      }`}
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedConversation(conversation.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
+                      onDragEnd={() => {
+                        setDraggedConversation(null);
+                        setDragOverFolder(null);
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          navigate(`/chat/${conversation.id}`);
+                          const event = new CustomEvent('conversationSelected', {
+                            detail: { conversationId: conversation.id }
+                          });
+                          window.dispatchEvent(event);
+                          if (isMobile) {
+                            setMobileOpen(false);
                           }
                         }}
-                        className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
-                        autoFocus
-                      />
-                    ) : (
-                      <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
-                        {conversation.title}
-                      </h4>
-                    )}
-                    {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
-                    {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-primary-600">
-                      {formatDate(conversation.updated_at)}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
-                      {conversation.message_count}
-                    </span>
-                  </div>
-                </button>
-
-                <div className="absolute top-2 right-2 flex gap-1">
-                  {editingConversationId === conversation.id ? (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          saveEditedTitle(conversation.id, e as any);
-                        }}
-                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                        title="Save"
+                        className="w-full text-left p-3 rounded-md transition-colors hover:bg-primary-100"
+                        disabled={editingConversationId === conversation.id}
                       >
-                        <CheckIcon className="h-3 w-3" />
+                        <div className="flex items-center gap-2 mb-1">
+                          {editingConversationId === conversation.id ? (
+                            <input
+                              type="text"
+                              value={editingTitle}
+                              onChange={(e) => setEditingTitle(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   const mouseEvent = e as any;
+                                   saveEditedTitle(conversation.id, mouseEvent);
+                                 } else if (e.key === 'Escape') {
+                                   const mouseEvent = e as any;
+                                   cancelEditingTitle(mouseEvent);
+                                 }
+                               }}
+                              className="flex-1 text-sm font-medium text-primary-900 bg-primary-100 border border-primary-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                              autoFocus
+                            />
+                          ) : (
+                            <h4 className="text-sm font-medium text-primary-800 truncate flex-1">
+                              {conversation.title}
+                            </h4>
+                          )}
+                          {conversation.is_pinned && <PinIcon className="h-3 w-3 text-primary-600" />}
+                          {conversation.is_archived && <ArchiveIcon className="h-3 w-3 text-primary-600" />}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-primary-600">
+                            {formatDate(conversation.updated_at)}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-800">
+                            {conversation.message_count}
+                          </span>
+                        </div>
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          cancelEditingTitle(e as any);
-                        }}
-                        className="p-1 text-primary-600 hover:text-primary-500 transition-colors"
-                        title="Cancel"
-                      >
-                        <XMarkIcon className="h-3 w-3" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
-                        className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
-                        title="More options"
-                      >
-                        <MoreVerticalIcon className="h-3 w-3" />
-                      </button>
-                    </>
-                  )}
+                      
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {editingConversationId === conversation.id ? (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                saveEditedTitle(conversation.id, e);
+                              }}
+                              className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors"
+                              title="Save"
+                            >
+                              <CheckIcon className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                cancelEditingTitle(e);
+                              }}
+                              className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors"
+                              title="Cancel"
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => handleConversationMenuOpen(conversation.id, e)}
+                              className="p-1 text-primary-600 hover:text-primary-700 hover:bg-primary-200 rounded transition-colors opacity-0 group-hover:opacity-100"
+                              title="More options"
+                            >
+                              <MoreVerticalIcon className="h-3 w-3" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              </>
+              )}
             </div>
           </div>
-        </div>
-      </nav>
-    </div>
-  );
+        </nav>
+      </div>
+    );
 
   return (
     <div className="flex h-screen bg-gray-50 w-full">
       {/* Mobile sidebar overlay */}
-      <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-500 ease-in-out ${isMobile && mobileOpen
+      <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-500 ease-in-out ${
+        isMobile && mobileOpen
           ? 'opacity-100 visible'
           : 'opacity-0 invisible'
-        }`}>
+      }`}>
         <div
           className="fixed inset-0 bg-gradient-to-br from-primary-900/80 via-primary-800/70 to-primary-900/80 backdrop-blur-sm"
           onClick={handleDrawerToggle}
         />
-        <div className={`relative flex-1 flex flex-col w-full h-full bg-transparent transition-transform duration-500 ease-in-out ${isMobile && mobileOpen
+        <div className={`relative flex-1 flex flex-col w-full h-full bg-transparent transition-transform duration-500 ease-in-out ${
+          isMobile && mobileOpen
             ? 'transform translate-x-0'
             : 'transform -translate-x-full'
-          }`}>
+        }`}>
           {drawer}
         </div>
       </div>
@@ -752,7 +746,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main content */}
       <div className={`flex-1 flex flex-col ${isMobile ? 'w-full' : 'ml-60'}`}>
-        {/* Top navigation */}
+        {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center">
@@ -765,11 +759,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </button>
               )}
               <h1 className="text-xl font-semibold text-primary-900">
-
+                {/* Page title will be set by individual pages */}
               </h1>
             </div>
             <div className="flex items-center space-x-2">
-              {/* New Chat Button - only show on chat page */}
+              {/* New Chat button for chat page */}
               {location.pathname === '/chat' && (
                 <button
                   onClick={handleNewChat}
@@ -779,7 +773,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   New Chat
                 </button>
               )}
-
+              {/* Logout button */}
               <button
                 onClick={async () => {
                   await logout();
@@ -794,13 +788,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Page content */}
+        {/* Main content area */}
         <main className="flex-1 overflow-auto lg:p-6">
           {children}
         </main>
       </div>
-
-
 
       {/* New Folder Dialog */}
       {newFolderDialog && (
@@ -824,8 +816,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <button
                     key={color}
                     onClick={() => setNewFolderColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${newFolderColor === color ? 'border-primary-400 scale-110' : 'border-gray-300'
-                      }`}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${
+                      newFolderColor === color ? 'border-primary-400 scale-110' : 'border-gray-300'
+                    }`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -870,14 +863,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <button
               onClick={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 const conversation = conversations.find(c => c.id === conversationMenuOpen);
                 if (conversation) {
-                  setEditingConversationId(conversation.id);
-                  setEditingTitle(conversation.title);
-                  handleConversationMenuClose();
+                  startEditingTitle(conversation, e);
                 }
+                handleConversationMenuClose();
               }}
               className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
@@ -890,7 +881,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <button
               onClick={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 moveConversationToFolder(conversationMenuOpen, null);
               }}
@@ -903,7 +893,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <button
                 key={folder.id}
                 onClick={(e) => {
-                  e.preventDefault();
                   e.stopPropagation();
                   moveConversationToFolder(conversationMenuOpen, folder.id);
                 }}
@@ -919,10 +908,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="menu-divider mt-1 pt-1">
               <button
                 onClick={(e) => {
-                  e.preventDefault();
                   e.stopPropagation();
-                  if (conversationMenuOpen && confirm('Are you sure you want to delete this conversation?')) {
-                    deleteConversation(conversationMenuOpen);
+                  if (window.confirm('Are you sure you want to delete this conversation?')) {
+                    deleteConversation(conversationMenuOpen!);
                   }
                 }}
                 className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"

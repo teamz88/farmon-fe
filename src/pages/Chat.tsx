@@ -95,7 +95,7 @@ const Chat: React.FC = () => {
   const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { conversations, loadConversations } = useChatContext();
+  const { conversations, loadConversations, loading: contextLoading } = useChatContext();
   const { user } = useAuth();
 
   // Remove the useEffect that loads data since ChatContext handles it
@@ -917,6 +917,18 @@ const Chat: React.FC = () => {
     setFeedbackReason('');
     setCurrentFeedbackMessage(null);
   };
+
+  // Show loading spinner during initial data load
+  if (contextLoading) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center bg-white rounded-lg shadow">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-400 rounded-full animate-spin"></div>
+          <p className="text-primary-600 text-lg">Loading chat...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-100px)] flex relative">
