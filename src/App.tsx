@@ -61,6 +61,10 @@ function App() {
                   element={<Chat />} 
                 />
                 <Route 
+                  path="/chat/:conversationId" 
+                  element={<Chat />} 
+                />
+                <Route 
                   path="/profile" 
                   element={<Profile />} 
                 />

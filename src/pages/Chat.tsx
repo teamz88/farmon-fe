@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -76,6 +76,7 @@ const sanitizeHtml = (html: string): string => {
 
 const Chat: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const { conversationId } = useParams<{ conversationId?: string }>();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [newChatFolderId, setNewChatFolderId] = useState<string | null>(null);
@@ -116,7 +117,7 @@ const Chat: React.FC = () => {
     }
   }, [messages, isTyping, loading]);
 
-  // Listen for folder selection events
+  // Listen for folder selection events and new chat events
   useEffect(() => {
     const handleSetSelectedFolder = (event: CustomEvent) => {
       setNewChatFolderId(event.detail.folderId);
@@ -127,28 +128,55 @@ const Chat: React.FC = () => {
       setMessages([]);
     };
 
+    const handleNewChat = () => {
+      setSelectedConversation(null);
+      setMessages([]);
+      setNewChatFolderId(null);
+      // Clear URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete('conversation');
+      url.searchParams.delete('folder');
+      window.history.replaceState({}, '', url.pathname);
+    };
+
+    const handleNewChatInFolder = (event: CustomEvent) => {
+      setSelectedConversation(null);
+      setMessages([]);
+      setNewChatFolderId(event.detail.folderId);
+      // Clear URL parameters but keep folder
+      const url = new URL(window.location.href);
+      url.searchParams.delete('conversation');
+      url.searchParams.set('folder', event.detail.folderId);
+      window.history.replaceState({}, '', url.toString());
+    };
+
     window.addEventListener('setSelectedFolder', handleSetSelectedFolder as EventListener);
     window.addEventListener('clearConversation', handleClearConversation);
+    window.addEventListener('newChat', handleNewChat as EventListener);
+    window.addEventListener('newChatInFolder', handleNewChatInFolder as EventListener);
 
     return () => {
       window.removeEventListener('setSelectedFolder', handleSetSelectedFolder as EventListener);
       window.removeEventListener('clearConversation', handleClearConversation);
+      window.removeEventListener('newChat', handleNewChat as EventListener);
+      window.removeEventListener('newChatInFolder', handleNewChatInFolder as EventListener);
     };
   }, []);
 
   // Handle URL parameters for conversation and folder selection
   useEffect(() => {
-    const conversationId = searchParams.get('conversation');
+    // Prioritize conversationId from URL path over search params
+    const urlConversationId = conversationId || searchParams.get('conversation');
     const folderId = searchParams.get('folder');
     
-    if (conversationId && conversationId !== selectedConversation) {
-      setSelectedConversation(conversationId);
+    if (urlConversationId && urlConversationId !== selectedConversation) {
+      setSelectedConversation(urlConversationId);
     }
     
     if (folderId && folderId !== newChatFolderId) {
       setNewChatFolderId(folderId);
     }
-  }, [searchParams, selectedConversation, newChatFolderId]);
+  }, [conversationId, searchParams, selectedConversation, newChatFolderId]);
 
   // Listen for conversation selection events from Layout
   useEffect(() => {
