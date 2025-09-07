@@ -8,6 +8,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import MagicLinkRegister from './pages/MagicLinkRegister'
 import MagicLinkSetPassword from './pages/MagicLinkSetPassword'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import UserManagement from './pages/UserManagement'
 import Profile from './pages/Profile'
 import { useAuth } from './hooks/useAuth'
@@ -46,6 +48,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Navigate to="/login" replace />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/magic-link-register" element={<MagicLinkRegister />} />
       <Route path="/magic-link/set-password" element={<MagicLinkSetPassword />} />
       <Route

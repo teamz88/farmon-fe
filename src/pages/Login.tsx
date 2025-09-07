@@ -131,6 +131,17 @@ const Login: React.FC = () => {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm">
+                  <Link
+                    to="/forgot-password"
+                    className="font-medium text-green-600 hover:text-green-500 transition-colors"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary-400 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors"

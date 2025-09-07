@@ -165,6 +165,19 @@ export const authApi = {
   refreshToken: () =>
     api.post<{ token: string }>('/auth/refresh/'),
 
+  forgotPassword: (email: string) => 
+    api.post('/auth/forgot-password/', { email }),
+
+  validateResetToken: (token: string) => 
+    api.get('/auth/reset-password/', { params: { token } }),
+
+  resetPassword: (token: string, newPassword: string, newPasswordConfirm: string) => 
+    api.post('/auth/reset-password/', { 
+      token, 
+      new_password: newPassword, 
+      new_password_confirm: newPasswordConfirm 
+    }),
+
   getCurrentUser: () =>
     api.get('/auth/user/'),
 
