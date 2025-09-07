@@ -164,8 +164,8 @@ const MagicLinkRegister: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center">
+            <img src="/farmon_fav.png" alt="logo" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
             Get Magic Link Access

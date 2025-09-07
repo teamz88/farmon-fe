@@ -1295,18 +1295,11 @@ const Chat: React.FC = () => {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="mb-8 p-3 rounded-lg bg-primary-400 text-white hover:bg-primary-500 transition-colors lg:hidden"
-            >
-              <MenuIcon className="w-5 h-5" />
-            </button>
-            
             {/* ChatGPT-like start screen */}
             <div className="w-full max-w-2xl mx-auto">
               <div className="text-center mb-8">
                 <img src='/farmon_fav.png' alt='logo' className='w-20 h-20 mx-auto rounded-2xl mb-5'/>
-                <h1 className="text-3xl font-semibold text-primary-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! Ready to boost your growth. What can I do for you today?</h1>
+                <h1 className="text-3xl font-semibold text-primary-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! How can I help you?</h1>
                 <p className="text-primary-600">Start a conversation below</p>
               </div>
               

@@ -341,7 +341,7 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
+                {/* <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="email_notifications"
@@ -353,7 +353,7 @@ const Profile: React.FC = () => {
                   <Label htmlFor="email_notifications" className="text-sm">
                     Receive email notifications
                   </Label>
-                </div>
+                </div> */}
                 
                 <Button 
                   type="submit" 
@@ -549,16 +549,8 @@ const Profile: React.FC = () => {
                   <p className="text-gray-900 capitalize">{profileData.role}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-500">Subscription:</span>
-                  <p className="text-gray-900 capitalize">{profileData.subscription_type}</p>
-                </div>
-                <div>
                   <span className="font-medium text-gray-500">Member Since:</span>
                   <p className="text-gray-900">{new Date(profileData.date_joined).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-500">Last Login:</span>
-                  <p className="text-gray-900">{new Date(profileData.last_login).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-500">Status:</span>
@@ -568,115 +560,6 @@ const Profile: React.FC = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Company Information */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              Company Information
-            </CardTitle>
-            <CardDescription>
-              Manage your company details and business information
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingClientInfo ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <span className="ml-2 text-gray-600">Loading company information...</span>
-              </div>
-            ) : clientInfo ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {clientInfo.company_name && (
-                    <div>
-                      <span className="font-medium text-gray-500">Company Name:</span>
-                      <p className="text-gray-900">{clientInfo.company_name}</p>
-                    </div>
-                  )}
-                  {clientInfo.owner_name && (
-                    <div>
-                      <span className="font-medium text-gray-500">Owner Name:</span>
-                      <p className="text-gray-900">{clientInfo.owner_name}</p>
-                    </div>
-                  )}
-                  {(clientInfo.city || clientInfo.state) && (
-                    <div>
-                      <span className="font-medium text-gray-500">Location:</span>
-                      <p className="text-gray-900">
-                        {[clientInfo.city, clientInfo.state].filter(Boolean).join(', ')}
-                      </p>
-                    </div>
-                  )}
-                  {clientInfo.year_started && (
-                    <div>
-                      <span className="font-medium text-gray-500">Year Started:</span>
-                      <p className="text-gray-900">{clientInfo.year_started}</p>
-                    </div>
-                  )}
-                  {clientInfo.trucks_count && (
-                    <div>
-                      <span className="font-medium text-gray-500">Number of Trucks:</span>
-                      <p className="text-gray-900">{clientInfo.trucks_count}</p>
-                    </div>
-                  )}
-                  {clientInfo.monthly_revenue && (
-                    <div>
-                      <span className="font-medium text-gray-500">Monthly Revenue:</span>
-                      <p className="text-gray-900">{clientInfo.monthly_revenue}</p>
-                    </div>
-                  )}
-                </div>
-                
-                {clientInfo.main_services && clientInfo.main_services.length > 0 && (
-                  <div>
-                    <span className="font-medium text-gray-500 block mb-2">Main Services:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {clientInfo.main_services.map((service: string, index: number) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
-                        >
-                          {service}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex justify-end pt-4">
-                  <Button
-                    onClick={() => setShowClientInfoModal(true)}
-                    variant="outline"
-                  >
-                    <Building className="h-4 w-4 mr-2" />
-                    Update Company Info
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Update your company information to help us provide better service.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    This information helps us understand your business needs and provide relevant features.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setShowClientInfoModal(true)}
-                  variant="outline"
-                  className="ml-4"
-                >
-                  <Building className="h-4 w-4 mr-2" />
-                  Add Company Info
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
         
         {/* Danger Zone */}
         <Card className="border-red-200 mt-5">
