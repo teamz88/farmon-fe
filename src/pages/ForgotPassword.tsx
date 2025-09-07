@@ -34,13 +34,13 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-primary-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <Link 
               to="/login" 
-              className="inline-flex items-center text-green-600 hover:text-green-700 mb-4 transition-colors"
+              className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Login
@@ -65,7 +65,7 @@ const ForgotPassword: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   placeholder="Enter your email"
                 />
               </div>
@@ -79,7 +79,7 @@ const ForgotPassword: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {isLoading ? (
                   <div className="flex items-center">

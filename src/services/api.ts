@@ -232,6 +232,8 @@ export const authApi = {
     email: string;
     company_name?: string;
     phone_number?: string;
+    title?: string;
+    position?: string;
   }) => api.post('/auth/magic-link/', data),
   
   validateMagicLink: (token: string) => api.get(`/auth/magic-link/${token}/`),

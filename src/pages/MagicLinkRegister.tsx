@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card';
-import { Mail, User, Building, Phone, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, User, Building, Phone, Sparkles, CheckCircle, AlertCircle, Briefcase } from 'lucide-react';
 import { authApi } from '../services/api';
 
 interface MagicLinkFormData {
@@ -20,6 +20,8 @@ interface MagicLinkFormData {
   email: string;
   companyName: string;
   phoneNumber: string;
+  title: string;
+  position: string;
 }
 
 const MagicLinkRegister: React.FC = () => {
@@ -29,7 +31,9 @@ const MagicLinkRegister: React.FC = () => {
     lastName: '',
     email: '',
     companyName: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    title: '',
+    position: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,7 +83,9 @@ const MagicLinkRegister: React.FC = () => {
         last_name: formData.lastName,
         email: formData.email,
         company_name: formData.companyName,
-        phone_number: formData.phoneNumber
+        phone_number: formData.phoneNumber,
+        title: formData.title,
+        position: formData.position
       });
 
       // Store authentication data
@@ -275,6 +281,42 @@ const MagicLinkRegister: React.FC = () => {
                   onChange={handleInputChange}
                   className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
                   placeholder="+1 (555) 123-4567"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+                Job Title
+              </Label>
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="title"
+                  name="title"
+                  type="text"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
+                  placeholder="CEO, Manager, Developer, etc."
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="position" className="text-sm font-medium text-gray-700">
+                Position
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="position"
+                  name="position"
+                  type="text"
+                  value={formData.position}
+                  onChange={handleInputChange}
+                  className="pl-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
+                  placeholder="Senior, Junior, Lead, etc."
                 />
               </div>
             </div>
