@@ -1300,7 +1300,6 @@ const Chat: React.FC = () => {
               <div className="text-center mb-8">
                 <img src='/farmon_fav.png' alt='logo' className='w-20 h-20 mx-auto rounded-2xl mb-5'/>
                 <h1 className="text-3xl font-semibold text-primary-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! How can I help you?</h1>
-                <p className="text-primary-600">Start a conversation below</p>
               </div>
               
               {/* Selected file display for start screen */}

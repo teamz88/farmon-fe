@@ -174,7 +174,7 @@ const MagicLinkRegister: React.FC = () => {
             <img src="/farmon_fav.png" alt="logo" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Get Magic Link Access
+            Get Your Free Farmon Link
           </CardTitle>
           <CardDescription className="text-gray-600">
             Enter your details to receive a magic link for instant platform access
@@ -287,7 +287,7 @@ const MagicLinkRegister: React.FC = () => {
             
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-                Job Title
+                Title/Position
               </Label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -303,7 +303,7 @@ const MagicLinkRegister: React.FC = () => {
               </div>
             </div>
             
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="position" className="text-sm font-medium text-gray-700">
                 Position
               </Label>
@@ -319,7 +319,7 @@ const MagicLinkRegister: React.FC = () => {
                   placeholder="Senior, Junior, Lead, etc."
                 />
               </div>
-            </div>
+            </div> */}
           </CardContent>
           
           <CardFooter className="flex flex-col space-y-4">
