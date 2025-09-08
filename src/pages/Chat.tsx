@@ -94,6 +94,7 @@ const Chat: React.FC = () => {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [fileUploadSuccess, setFileUploadSuccess] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { conversations, loadConversations, loading: contextLoading } = useChatContext();
@@ -285,6 +286,8 @@ const Chat: React.FC = () => {
       
       let accumulatedContent = '';
       let accumulatedSources: string[] = [];
+      let actualUserMessageId: string | null = null;
+      let actualAssistantMessageId: string | null = null;
       
       try {
         while (true) {
@@ -298,6 +301,14 @@ const Chat: React.FC = () => {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                
+                // Capture actual message IDs from backend
+                if (data.user_message_id && !actualUserMessageId) {
+                  actualUserMessageId = data.user_message_id;
+                }
+                if (data.assistant_message_id && !actualAssistantMessageId) {
+                  actualAssistantMessageId = data.assistant_message_id;
+                }
                 
                 if (data.type === 'delta') {
                   // Handle streaming content chunks
@@ -315,18 +326,32 @@ const Chat: React.FC = () => {
                   
                   // Update the assistant message content in real-time with immediate rendering
                   setMessages(prev => {
-                    const updatedMessages = prev.map(msg => 
-                      msg.id === tempAssistantMessage.id 
-                        ? { 
-                            ...msg, 
-                            content: processedContent, 
-                            isHtml: isHtmlContent,
-                            updated_at: new Date().toISOString() 
-                          }
-                        : msg
-                    );
+                    const updatedMessages = prev.map(msg => {
+                      if (msg.id === tempAssistantMessage.id) {
+                        return {
+                          ...msg,
+                          id: actualAssistantMessageId || msg.id, // Update with real ID if available
+                          content: processedContent, 
+                          isHtml: isHtmlContent,
+                          updated_at: new Date().toISOString() 
+                        };
+                      }
+                      // Also update user message ID if it's a temp message
+                       if (msg.id.startsWith('temp-user-') && msg.message_type === 'user' && actualUserMessageId) {
+                         return {
+                           ...msg,
+                           id: actualUserMessageId
+                         };
+                       }
+                      return msg;
+                    });
                     return updatedMessages;
                   });
+                  
+                  // Update temp message reference
+                  if (actualAssistantMessageId) {
+                    tempAssistantMessage.id = actualAssistantMessageId;
+                  }
                   
                   // Force immediate DOM update and scroll
                   requestAnimationFrame(() => {
@@ -347,17 +372,32 @@ const Chat: React.FC = () => {
                   }
                   
                   
-                  setMessages(prev => prev.map(msg => 
-                    msg.id === tempAssistantMessage.id 
-                      ? { 
-                          ...msg, 
-                          content: finalContent, 
-                          isHtml: isHtmlContent,
-                          sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
-                          updated_at: new Date().toISOString() 
-                        }
-                      : msg
-                  ));
+                  setMessages(prev => prev.map(msg => {
+                    if (msg.id === tempAssistantMessage.id || msg.id === actualAssistantMessageId) {
+                      return {
+                        ...msg,
+                        id: actualAssistantMessageId || msg.id,
+                        content: finalContent, 
+                        isHtml: isHtmlContent,
+                        sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
+                        updated_at: new Date().toISOString() 
+                      };
+                    }
+                    // Also update user message ID if it's a temp message
+                     if (msg.id.startsWith('temp-user-') && msg.message_type === 'user' && actualUserMessageId) {
+                       return {
+                         ...msg,
+                         id: actualUserMessageId
+                       };
+                     }
+                    return msg;
+                  }));
+                  
+                  // Reload messages from history API after stream completes
+                  setTimeout(() => {
+                    loadMessages(conversationId);
+                  }, 500);
+                  
                   return;
                 } else if (data.type === 'source_document') {
                   // Handle source documents and add to sources array
@@ -382,11 +422,24 @@ const Chat: React.FC = () => {
                     
                     // Update the assistant message with sources
                     setMessages(prev => {
-                      const updatedMessages = prev.map(msg => 
-                        msg.id === tempAssistantMessage.id 
-                          ? { ...msg, sources: [...accumulatedSources], updated_at: new Date().toISOString() }
-                          : msg
-                      );
+                      const updatedMessages = prev.map(msg => {
+                        if (msg.id === tempAssistantMessage.id || msg.id === actualAssistantMessageId) {
+                          return {
+                            ...msg,
+                            id: actualAssistantMessageId || msg.id,
+                            sources: [...accumulatedSources],
+                            updated_at: new Date().toISOString()
+                          };
+                        }
+                        // Also update user message ID if it's a temp message
+                         if (msg.id.startsWith('temp-user-') && msg.message_type === 'user' && actualUserMessageId) {
+                           return {
+                             ...msg,
+                             id: actualUserMessageId
+                           };
+                         }
+                        return msg;
+                      });
                       return updatedMessages;
                     });
                   }
@@ -435,7 +488,7 @@ const Chat: React.FC = () => {
       } else {
         // Existing conversation, add user message to UI immediately
         const tempUserMessage: ChatMessage = {
-          id: `temp-${Date.now()}`,
+          id: `temp-user-${Date.now()}`,
           content: messageText,
           message_type: 'user',
           created_at: new Date().toISOString(),
@@ -473,6 +526,11 @@ const Chat: React.FC = () => {
     formData.append('description', `Uploaded from chat: ${file.name}`);
 
     const response = await filesApi.uploadFile(formData);
+    
+    // Show success message
+    setFileUploadSuccess(`File "${file.name}" uploaded successfully!`);
+    setTimeout(() => setFileUploadSuccess(null), 5000); // Hide after 5 seconds
+    
     return response.data;
   };
 
@@ -503,6 +561,7 @@ const Chat: React.FC = () => {
       }
     } catch (error) {
       console.error('File upload failed:', error);
+      setFileUploadSuccess(null);
       alert('File upload failed. Please try again.');
     } finally {
       setUploadingFile(false);
@@ -839,14 +898,14 @@ const Chat: React.FC = () => {
       
       // Add user message to UI immediately
       const tempUserMessage: ChatMessage = {
-        id: `temp-${Date.now()}`,
+        id: `temp-user-${Date.now()}`,
         content: messageText,
         message_type: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         conversation: newConversationId
       };
-      setMessages([tempUserMessage]);
+      setMessages(prev => [...prev, tempUserMessage]);
       
       // Stream the response
       await streamResponse(messageText, newConversationId);
@@ -1221,6 +1280,16 @@ const Chat: React.FC = () => {
               
               <div ref={messagesEndRef} />
             </div>
+
+            {/* File Upload Success Message */}
+            {fileUploadSuccess && (
+              <div className="mx-2 sm:mx-4 mb-2 p-3 bg-green-100 border border-green-300 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">{fileUploadSuccess}</span>
+                </div>
+              </div>
+            )}
 
             {/* Message Input */}
             <div className="p-2 sm:p-4 border-t border-primary-200">

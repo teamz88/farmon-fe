@@ -243,6 +243,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (isMobile) {
       setMobileOpen(false);
     }
+    window.location.href = '/chat';
   };
 
   const startEditingTitle = (conversation: Conversation, e: React.MouseEvent) => {
@@ -763,16 +764,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
-              {/* New Chat button for chat page */}
-              {location.pathname === '/chat' && (
-                <button
-                  onClick={handleNewChat}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-400 rounded-md hover:bg-primary-500 transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  New Chat
-                </button>
-              )}
               {/* Logout button */}
               <button
                 onClick={async () => {
