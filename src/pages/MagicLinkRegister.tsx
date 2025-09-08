@@ -177,7 +177,7 @@ const MagicLinkRegister: React.FC = () => {
             Get Your Free Farmon Link
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your details to receive a magic link for instant platform access
+            Enter your details to receive a free Farmon link for instant platform access
           </CardDescription>
         </CardHeader>
         
