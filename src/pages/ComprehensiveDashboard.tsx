@@ -52,11 +52,12 @@ interface StatCardProps {
   color: string;
   subtitle?: string;
   loading?: boolean;
+  link?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle, loading }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle, loading, link }) => {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+    <a href={link || '#'} className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 truncate">{title}</p>
@@ -78,7 +79,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle
           <div style={{ color }} className="w-5 h-5 sm:w-6 sm:h-6">{icon}</div>
         </div>
       </div>
-    </div>
+    </a>
   );
 };
 
@@ -96,7 +97,7 @@ const formatNumber = (num: number): string => {
   } else if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
-  return (num - 1).toString();
+  return num.toString();
 };
 
 const ComprehensiveDashboard: React.FC = () => {
@@ -322,10 +323,11 @@ const ComprehensiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatCard
           title="Total Users"
-          value={formatNumber(dashboardStats?.total_users || 0)}
+          value={formatNumber(dashboardStats?.total_users as number - 1 || 0)}
           icon={<Users className="w-6 h-6" />}
           color="#e5a06d"
           loading={statsLoading}
+          link="/users"
         />
         <StatCard
           title="System Performance"
@@ -341,6 +343,7 @@ const ComprehensiveDashboard: React.FC = () => {
           icon={<Upload className="w-6 h-6" />}
           color="#F59E0B"
           loading={statsLoading}
+          link="/files"
         />
         <StatCard
           title="Storage Used"
