@@ -675,16 +675,6 @@ const Files: React.FC = () => {
             <Share className="w-4 h-4 mr-2" />
             Share
           </button>
-          <button
-            onClick={() => {
-              if (menuFile) deleteFile(menuFile.id);
-              handleMenuClose();
-            }}
-            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </button>
         </div>
       )}
       

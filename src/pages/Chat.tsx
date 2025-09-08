@@ -477,8 +477,15 @@ const Chat: React.FC = () => {
       // Upload file first if one is selected
       if (selectedFile) {
         setUploadingFile(true);
-        await uploadFileToBackend(selectedFile);
-        setSelectedFile(null);
+        try {
+          await uploadFileToBackend(selectedFile);
+          setSelectedFile(null);
+        } catch (error: any) {
+          setUploadingFile(false);
+          const errorMessage = error.message || 'An error occurred while uploading the file. Please try again.';
+          alert(errorMessage);
+          return; // Don't proceed with sending message if file upload fails
+        }
         setUploadingFile(false);
       }
       
@@ -525,13 +532,37 @@ const Chat: React.FC = () => {
     formData.append('file', file);
     formData.append('description', `Uploaded from chat: ${file.name}`);
 
-    const response = await filesApi.uploadFile(formData);
-    
-    // Show success message
-    setFileUploadSuccess(`File "${file.name}" uploaded successfully!`);
-    setTimeout(() => setFileUploadSuccess(null), 5000); // Hide after 5 seconds
-    
-    return response.data;
+    try {
+      const response = await filesApi.uploadFile(formData);
+      
+      // Show success message
+      setFileUploadSuccess(`File "${file.name}" uploaded successfully!`);
+      setTimeout(() => setFileUploadSuccess(null), 5000); // Hide after 5 seconds
+      
+      return response.data;
+    } catch (error: any) {
+      // Handle specific error messages from backend
+      let errorMessage = 'An error occurred while uploading the file. Please try again.';
+      
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data.non_field_errors) {
+          // Display non_field_errors nicely
+          errorMessage = Array.isArray(error.response.data.non_field_errors) 
+            ? error.response.data.non_field_errors.join('. ') 
+            : error.response.data.non_field_errors;
+        } else if (error.response.data.file) {
+          errorMessage = Array.isArray(error.response.data.file) 
+            ? error.response.data.file[0] 
+            : error.response.data.file;
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
   };
 
   const handleFileUpload = async () => {
@@ -559,10 +590,13 @@ const Chat: React.FC = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('File upload failed:', error);
       setFileUploadSuccess(null);
-      alert('File upload failed. Please try again.');
+      
+      // Show specific error message from backend
+      const errorMessage = error.message || 'An error occurred while uploading the file. Please try again.';
+      alert(errorMessage);
     } finally {
       setUploadingFile(false);
     }
@@ -865,14 +899,6 @@ const Chat: React.FC = () => {
   // Auto-create conversation and send first message
   const sendFirstMessage = async (messageText: string) => {
     try {
-      // Upload file first if one is selected
-      if (selectedFile) {
-        setUploadingFile(true);
-        await uploadFileToBackend(selectedFile);
-        setSelectedFile(null);
-        setUploadingFile(false);
-      }
-      
       // Create new conversation with auto-generated title
       const conversationTitle = generateConversationTitle(messageText);
       const createRequest: any = {
