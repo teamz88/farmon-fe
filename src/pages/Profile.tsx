@@ -25,6 +25,9 @@ interface ProfileData {
   phone_number: string | null;
   avatar: string | null;
   role: string;
+  title: string | null;
+  position: string | null;
+  company_name: string | null;
   subscription_type: string;
   subscription_status: string;
   email_notifications: boolean;
@@ -79,7 +82,6 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     loadProfile();
-    loadClientInfo();
   }, []);
 
   const loadClientInfo = async () => {
@@ -340,6 +342,40 @@ const Profile: React.FC = () => {
                     />
                   </div>
                 </div>
+                
+                {/* Company Information */}
+                {(profileData?.company_name || profileData?.title) && (
+                  <div className="border-t pt-4 mt-4">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      Company Information
+                    </h3>
+                    
+                    {profileData?.company_name && (
+                      <div className="space-y-2 mb-3">
+                        <Label>Company Name</Label>
+                        <Input
+                          value={profileData.company_name}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {profileData?.title && (
+                        <div className="space-y-2">
+                          <Label>Title/Position</Label>
+                          <Input
+                            value={profileData.title}
+                            disabled
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {/* <div className="flex items-center space-x-2">
                   <input
