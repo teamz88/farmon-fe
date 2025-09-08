@@ -96,7 +96,7 @@ const formatNumber = (num: number): string => {
   } else if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
-  return num.toString();
+  return (num - 1).toString();
 };
 
 const ComprehensiveDashboard: React.FC = () => {
@@ -134,75 +134,55 @@ const ComprehensiveDashboard: React.FC = () => {
       return {
         userGrowthData: { labels: [], datasets: [] },
         activityData: { labels: [], datasets: [] },
-        revenueData: { labels: [], datasets: [] },
         featureUsageData: { labels: [], datasets: [] }
       };
     }
 
     // User Growth Chart Data
-    const userGrowthLabels = dashboardStats.user_growth_chart?.map(item => 
+    const userGrowthLabels = dashboardStats.user_growth_chart?.map(item =>
       dayjs(item.date).format('MMM DD')
     ) || [];
-    
+
     const userGrowthData = {
-       labels: userGrowthLabels,
-       datasets: [
-         {
-           label: 'New Users',
-           data: dashboardStats.user_growth_chart?.map(item => item.new_users) || [],
-           backgroundColor: 'rgba(34, 197, 94, 0.8)',
-           borderColor: 'rgb(34, 197, 94)',
-           borderWidth: 1,
-         },
-       ],
-     };
-
-     const totalUsersData = {
-       labels: userGrowthLabels,
-       datasets: [
-         {
-           label: 'Total Users',
-           data: dashboardStats.user_growth_chart?.map(item => item.total_users) || [],
-           borderColor: 'rgb(229, 160, 109)',
-           backgroundColor: 'rgba(229, 160, 109, 0.1)',
-           tension: 0.4,
-           fill: true,
-         },
-       ],
-     };
-
-    // Activity Chart Data (Questions)
-     const activityLabels = dashboardStats.activity_chart?.map(item => 
-       dayjs(item.date).format('MMM DD')
-     ) || [];
-     
-     const activityData = {
-       labels: activityLabels,
-       datasets: [
-         {
-           label: 'Questions Asked',
-           data: dashboardStats.activity_chart?.map(item => item.questions) || [],
-           borderColor: 'rgb(229, 160, 109)',
-           backgroundColor: 'rgba(229, 160, 109, 0.1)',
-           tension: 0.4,
-           fill: true,
-         },
-       ],
-     };
-
-    // Revenue Chart Data (Site Visits replacement)
-    const revenueLabels = dashboardStats.revenue_chart?.map(item => 
-      dayjs(item.date).format('MMM DD')
-    ) || [];
-    
-    const revenueData = {
-      labels: revenueLabels,
+      labels: userGrowthLabels,
       datasets: [
         {
-          label: 'Daily Revenue',
-          data: dashboardStats.revenue_chart?.map(item => item.revenue) || [],
-          borderColor: 'rgb(139, 92, 246)',
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          label: 'New Users',
+          data: dashboardStats.user_growth_chart?.map(item => item.new_users) || [],
+          backgroundColor: 'rgba(34, 197, 94, 0.8)',
+          borderColor: 'rgb(34, 197, 94)',
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    const totalUsersData = {
+      labels: userGrowthLabels,
+      datasets: [
+        {
+          label: 'Total Users',
+          data: dashboardStats.user_growth_chart?.map(item => item.total_users) || [],
+          borderColor: 'rgb(229, 160, 109)',
+          backgroundColor: 'rgba(229, 160, 109, 0.1)',
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    };
+
+    // Activity Chart Data (Questions)
+    const activityLabels = dashboardStats.activity_chart?.map(item =>
+      dayjs(item.date).format('MMM DD')
+    ) || [];
+
+    const activityData = {
+      labels: activityLabels,
+      datasets: [
+        {
+          label: 'Questions Asked',
+          data: dashboardStats.activity_chart?.map(item => item.questions) || [],
+          borderColor: 'rgb(229, 160, 109)',
+          backgroundColor: 'rgba(229, 160, 109, 0.1)',
           tension: 0.4,
           fill: true,
         },
@@ -229,10 +209,10 @@ const ComprehensiveDashboard: React.FC = () => {
       ],
     };
 
-    return { userGrowthData, totalUsersData, activityData, revenueData, featureUsageData };
+    return { userGrowthData, totalUsersData, activityData, featureUsageData };
   };
 
-  const { userGrowthData, totalUsersData, activityData, revenueData, featureUsageData } = processChartData();
+  const { userGrowthData, totalUsersData, activityData, featureUsageData } = processChartData();
 
   const chartOptions = {
     responsive: true,
@@ -348,11 +328,12 @@ const ComprehensiveDashboard: React.FC = () => {
           loading={statsLoading}
         />
         <StatCard
-          title="Active Subscriptions"
-          value={formatNumber(subscriptionStats?.data?.active_subscriptions || dashboardStats?.premium_users || 0)}
-          icon={<CreditCard className="w-6 h-6" />}
-          color="#10B981"
-          loading={subscriptionLoading}
+          title="System Performance"
+          value={`${(dashboardStats?.uptime_percentage || 99.9).toFixed(1)}%`}
+          icon={<Activity className="w-6 h-6" />}
+          color="#84CC16"
+          subtitle="Uptime"
+          loading={statsLoading}
         />
         <StatCard
           title="Files Uploaded"
@@ -393,45 +374,6 @@ const ComprehensiveDashboard: React.FC = () => {
             <Bar data={userGrowthData} options={barChartOptions} />
           </div>
         </div>
-      </div>
-
-      {/* Revenue Chart */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Daily Revenue (Last 30 Days)</h3>
-          <TrendingUp className="w-5 h-5 text-purple-600" />
-        </div>
-        <div className="h-64 sm:h-80">
-          <Line data={revenueData} options={chartOptions} />
-        </div>
-      </div>
-
-      {/* Additional Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <StatCard
-          title="Total Messages"
-          value={formatNumber(dashboardStats?.total_messages || 0)}
-          icon={<MessageSquare className="w-6 h-6" />}
-          color="#8b5cf6"
-          subtitle="All time"
-          loading={statsLoading}
-        />
-        <StatCard
-          title="Total Revenue"
-          value={`$${(dashboardStats?.total_revenue || 0).toFixed(2)}`}
-          icon={<TrendingUp className="w-6 h-6" />}
-          color="#F59E0B"
-          subtitle="All time"
-          loading={statsLoading}
-        />
-        <StatCard
-          title="System Performance"
-          value={`${(dashboardStats?.uptime_percentage || 99.9).toFixed(1)}%`}
-          icon={<Activity className="w-6 h-6" />}
-          color="#84CC16"
-          subtitle="Uptime"
-          loading={statsLoading}
-        />
       </div>
 
       {/* Auto-refresh indicator */}

@@ -231,44 +231,6 @@ const Files: React.FC = () => {
         </div>
       )}
 
-      {/* File Stats */}
-      {stats && (
-        <div className="mx-3 sm:mx-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
-            <h3 className="text-lg sm:text-2xl font-bold text-primary mb-1">
-              {stats.total_files}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500">
-              Total Files
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
-            <h3 className="text-lg sm:text-2xl font-bold text-primary mb-1">
-              {formatFileSize(stats.total_size)}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500">
-              Total Size
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
-            <h3 className="text-lg sm:text-2xl font-bold text-primary mb-1">
-              {Object.keys(stats.files_by_category).length}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500">
-              Categories
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
-            <h3 className="text-lg sm:text-2xl font-bold text-primary mb-1">
-              {files.filter(f => f.is_shared).length}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500">
-              Shared Files
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Loading State */}
       {loading && files.length === 0 && (
         <div className="mx-3 sm:mx-6 bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
@@ -278,7 +240,7 @@ const Files: React.FC = () => {
       )}
 
       {/* Empty State */}
-      {!loading && files.length === 0 && (
+      {!loading && (
         <div className="mx-3 sm:mx-6 mb-5 bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <File className="w-8 h-8 text-gray-400" />
