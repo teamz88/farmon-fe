@@ -336,13 +336,13 @@ const MagicLinkRegister: React.FC = () => {
               ) : (
                 <div className="flex items-center space-x-2">
                   <Sparkles className="w-4 h-4" />
-                  <span>Get Magic Link</span>
+                  <span>Get Your Free Farmon Link</span>
                 </div>
               )}
             </Button>
             
             <p className="text-xs text-gray-500 text-center">
-              By clicking "Get Magic Link", you agree to receive a magic link via email to access the platform.
+              By clicking "Get Your Free Farmon Link", you agree to receive a magic link via email to access the platform.
             </p>
           </CardFooter>
         </form>
