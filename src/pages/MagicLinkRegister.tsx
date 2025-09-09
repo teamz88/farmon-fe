@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card';
-import { Mail, User, Building, Phone, Sparkles, CheckCircle, AlertCircle, Briefcase } from 'lucide-react';
+import { Mail, User, Building, Phone, Sparkles, CheckCircle, AlertCircle, Briefcase, Lock, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '../services/api';
 
 interface MagicLinkFormData {
@@ -22,6 +22,8 @@ interface MagicLinkFormData {
   phoneNumber: string;
   title: string;
   position: string;
+  password: string;
+  confirmPassword: string;
 }
 
 const MagicLinkRegister: React.FC = () => {
@@ -33,18 +35,51 @@ const MagicLinkRegister: React.FC = () => {
     companyName: '',
     phoneNumber: '',
     title: '',
-    position: ''
+    position: '',
+    password: '',
+    confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [magicLink, setMagicLink] = useState('');
   const [userData, setUserData] = useState<any>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setError(''); // Clear error when user starts typing
+    
+    // Calculate password strength
+    if (name === 'password') {
+      calculatePasswordStrength(value);
+    }
+  };
+
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (/[A-Z]/.test(password)) strength += 1;
+    if (/[a-z]/.test(password)) strength += 1;
+    if (/[0-9]/.test(password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+    setPasswordStrength(strength);
+  };
+
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength <= 2) return 'bg-red-500';
+    if (passwordStrength <= 3) return 'bg-yellow-500';
+    if (passwordStrength <= 4) return 'bg-blue-500';
+    return 'bg-green-500';
+  };
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength <= 2) return 'Weak';
+    if (passwordStrength <= 3) return 'Fair';
+    if (passwordStrength <= 4) return 'Good';
+    return 'Strong';
   };
 
   const validateForm = (): boolean => {
@@ -64,6 +99,22 @@ const MagicLinkRegister: React.FC = () => {
       setError('Please enter a valid email address');
       return false;
     }
+    if (!formData.password.trim()) {
+      setError('Password is required');
+      return false;
+    }
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    if (passwordStrength < 3) {
+      setError('Please choose a stronger password');
+      return false;
+    }
     return true;
   };
 
@@ -78,28 +129,27 @@ const MagicLinkRegister: React.FC = () => {
     setError('');
 
     try {
-      const response = await authApi.createMagicLink({
+      const response = await authApi.register({
+        username: formData.email, // Use email as username
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        company_name: formData.companyName,
         phone_number: formData.phoneNumber,
-        title: formData.title,
-        position: formData.position
+        password: formData.password,
+        password_confirm: formData.confirmPassword
       });
 
       // Store authentication data
-        if (response.data.access && response.data.refresh) {
-          localStorage.setItem('authToken', response.data.access);
-          localStorage.setItem('refreshToken', response.data.refresh);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response.data.tokens?.access && response.data.tokens?.refresh) {
+        localStorage.setItem('authToken', response.data.tokens.access);
+        localStorage.setItem('refreshToken', response.data.tokens.refresh);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
         // Redirect to dashboard immediately
         navigate('/dashboard');
       } else {
-        // Fallback: show success message with magic link
+        // Fallback: show success message
         setSuccess(true);
-        setMagicLink(response.data.magic_link);
         setUserData(response.data.user);
       }
     } catch (err: any) {
@@ -124,42 +174,25 @@ const MagicLinkRegister: React.FC = () => {
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              {userData ? 'Account Created Successfully!' : 'Magic Link Sent!'}
+              Account Created Successfully!
             </CardTitle>
             <CardDescription className="text-gray-600">
-              {userData 
-                ? 'Your account has been created and you are now signed in. You will be redirected to the dashboard shortly.'
-                : 'We\'ve sent a magic link to your email address. Click the link to complete your registration.'
-              }
+              Your account has been created and you are now signed in. You will be redirected to the dashboard shortly.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {userData ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-primary-50 rounded-lg">
-                  <Label className="text-sm font-medium text-primary-700">Welcome, {userData.first_name}!</Label>
-                  <div className="mt-2 space-y-1">
-                    <p className="text-sm text-primary-600">Username: {userData.username}</p>
-                    <p className="text-sm text-primary-600">Email: {userData.email}</p>
-                  </div>
+            <div className="space-y-4">
+              <div className="p-4 bg-primary-50 rounded-lg">
+                <Label className="text-sm font-medium text-primary-700">Welcome, {userData?.first_name}!</Label>
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-primary-600">Username: {userData?.username}</p>
+                  <p className="text-sm text-primary-600">Email: {userData?.email}</p>
                 </div>
-                <p className="text-sm text-gray-500 text-center">
-                  Redirecting to dashboard...
-                </p>
               </div>
-            ) : (
-              <div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <Label className="text-sm font-medium text-gray-700">Magic Link:</Label>
-                  <div className="mt-1 p-2 bg-white border rounded text-xs font-mono break-all">
-                    {magicLink}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  Please check your email and click the magic link to set your password and access the platform.
-                </p>
-              </div>
-             )}
+              <p className="text-sm text-gray-500 text-center">
+                Redirecting to dashboard...
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -174,10 +207,10 @@ const MagicLinkRegister: React.FC = () => {
             <img src="/farmon_fav.png" alt="logo" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Get Your Free Farmon Link
+            Create Your Farmon Account
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your details to receive a free Farmon link for instant platform access
+            Enter your details and create a password to get instant platform access
           </CardDescription>
         </CardHeader>
         
@@ -320,6 +353,98 @@ const MagicLinkRegister: React.FC = () => {
                 />
               </div>
             </div> */}
+            
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password *
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="pl-10 pr-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
+                  placeholder="Create a strong password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              
+              {/* Password strength indicator */}
+              {formData.password && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                        style={{ width: `${(passwordStrength / 5) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className={`text-xs font-medium ${
+                      passwordStrength >= 4 ? 'text-green-600' : 
+                      passwordStrength >= 3 ? 'text-blue-600' : 
+                      passwordStrength >= 2 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {getPasswordStrengthText()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm Password *
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="pl-10 pr-10 border-gray-300 focus:border-primary-400 focus:ring-primary-400"
+                  placeholder="Confirm your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              
+              {/* Password match indicator */}
+              {formData.confirmPassword && (
+                <div className="flex items-center gap-2 text-xs">
+                  {formData.password === formData.confirmPassword ? (
+                    <>
+                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <span className="text-green-600">Passwords match</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="text-red-600">Passwords don't match</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </CardContent>
           
           <CardFooter className="flex flex-col space-y-4">
@@ -331,18 +456,18 @@ const MagicLinkRegister: React.FC = () => {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Sending Magic Link...</span>
+                  <span>Creating Account...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
                   <Sparkles className="w-4 h-4" />
-                  <span>Get Your Free Farmon Link</span>
+                  <span>Create Account</span>
                 </div>
               )}
             </Button>
             
             <p className="text-xs text-gray-500 text-center">
-              By clicking "Get Your Free Farmon Link", you agree to receive a magic link via email to access the platform.
+              By clicking "Create Account", you agree to create an account and access the platform.
             </p>
           </CardFooter>
         </form>
