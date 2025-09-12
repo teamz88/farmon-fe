@@ -393,10 +393,15 @@ const Chat: React.FC = () => {
                     return msg;
                   }));
                   
-                  // Reload messages from history API after stream completes
-                  setTimeout(() => {
-                    loadMessages(conversationId);
-                  }, 500);
+                  // Call both conversations and history APIs after stream completes
+                  try {
+                    await Promise.all([
+                      loadConversations(), // Refresh conversations list
+                      loadMessages(conversationId) // Refresh conversation history
+                    ]);
+                  } catch (apiError) {
+                    console.error('Failed to refresh data after stream:', apiError);
+                  }
                   
                   return;
                 } else if (data.type === 'source_document') {
