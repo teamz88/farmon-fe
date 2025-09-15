@@ -16,11 +16,16 @@ import {
   X,
   Grid,
   List,
+  Shield,
 } from 'lucide-react';
 import { filesApi } from '../services/api';
 import { FileItem, FileStats, FileListResponse } from '../types/files';
+import { useAuth } from '../hooks/useAuth';
 
 const Files: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  
   const [files, setFiles] = useState<FileItem[]>([]);
   const [stats, setStats] = useState<FileStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -120,6 +125,31 @@ const Files: React.FC = () => {
     } catch (error) {
       console.error('Failed to share file:', error);
       setError('Failed to share file');
+    }
+  };
+
+  const adminDeleteFile = async (fileId: string) => {
+    try {
+      await filesApi.adminDeleteFile(fileId);
+      await loadFiles();
+      await loadStats();
+      setError(null);
+    } catch (error) {
+      console.error('Failed to permanently delete file:', error);
+      setError('Failed to permanently delete file');
+    }
+  };
+
+  const adminBulkDelete = async () => {
+    try {
+      await filesApi.adminBulkDelete(selectedFiles);
+      setSelectedFiles([]);
+      await loadFiles();
+      await loadStats();
+      setError(null);
+    } catch (error) {
+      console.error('Failed to permanently delete files:', error);
+      setError('Failed to permanently delete files');
     }
   };
 
@@ -292,14 +322,26 @@ const Files: React.FC = () => {
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             {selectedFiles.length > 0 && (
-              <button
-                onClick={bulkDelete}
-                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-error text-white rounded-lg hover:bg-error-700 transition-colors text-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Delete Selected ({selectedFiles.length})</span>
-                <span className="sm:hidden">Delete ({selectedFiles.length})</span>
-              </button>
+              <>
+                <button
+                  onClick={bulkDelete}
+                  className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-error text-white rounded-lg hover:bg-error-700 transition-colors text-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Delete Selected ({selectedFiles.length})</span>
+                  <span className="sm:hidden">Delete ({selectedFiles.length})</span>
+                </button>
+                {isAdmin && (
+                  <button
+                    onClick={adminBulkDelete}
+                    className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm border-2 border-red-700"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span className="hidden sm:inline">Permanently Delete ({selectedFiles.length})</span>
+                    <span className="sm:hidden">Perm Delete ({selectedFiles.length})</span>
+                  </button>
+                )}
+              </>
             )}
             <button
               onClick={() => setUploadDialog(true)}
@@ -675,6 +717,28 @@ const Files: React.FC = () => {
             <Share className="w-4 h-4 mr-2" />
             Share
           </button>
+          <button
+            onClick={() => {
+              if (menuFile) deleteFile(menuFile.id);
+              handleMenuClose();
+            }}
+            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                if (menuFile) adminDeleteFile(menuFile.id);
+                handleMenuClose();
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-red-800 hover:bg-red-100 transition-colors border-t border-red-200"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Permanently Delete
+            </button>
+          )}
         </div>
       )}
       

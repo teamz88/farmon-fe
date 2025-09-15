@@ -434,6 +434,12 @@ export const filesApi = {
     api.get('/files/', { params }),
   getFile: (id: string) => api.get(`/files/${id}/`),
   updateFile: (id: string, data: any) => api.patch(`/files/${id}/`, data),
+  // Admin delete file (hard delete)
+  adminDeleteFile: (fileId: string) => api.delete(`/files/admin/${fileId}/delete/`),
+
+  // Admin bulk delete files (hard delete)
+  adminBulkDelete: (fileIds: string[]) => api.post('/files/admin/bulk-delete/', { file_ids: fileIds }),
+
   deleteFile: (id: string) => api.delete(`/files/${id}/`),
   downloadFile: (id: string) => api.get(`/files/${id}/download/`, { responseType: 'blob' }),
   getDownloadUrl: (id: string) => api.get(`/files/${id}/download-url/`),
