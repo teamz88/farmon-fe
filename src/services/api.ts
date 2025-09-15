@@ -428,6 +428,7 @@ export const filesApi = {
   // File management
   uploadFile: (formData: FormData, config?: any) => api.post('/files/upload/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 300000, // 5 minutes for file uploads
     ...config
   }),
   getFiles: (params?: { page?: number; search?: string; category?: string }) =>
