@@ -28,7 +28,7 @@ export interface ChatMessage {
   conversation: string;
   content: string;
   message_type: 'user' | 'assistant';
-  sources?: string[];
+  sources?: (string | { filename: string; page?: number })[];
   created_at: string;
   updated_at: string;
   feedback?: 'positive' | 'negative' | null;

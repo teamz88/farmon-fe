@@ -1169,20 +1169,44 @@ const Chat: React.FC = () => {
                                 <p className="text-sm font-medium text-primary-700 mb-2">Sources:</p>
                                 <div className="space-y-1">
                                   {message.sources.map((source, index) => {
-                                    // Check if source is a URL
-                                    const isUrl = source.startsWith('http://') || source.startsWith('https://');
-                                    const displayText = isUrl ? new URL(source).hostname : (source.split('.')[0] ?? source);
+                                    // Handle both string sources (legacy) and object sources (new format)
+                                    let sourceUrl: string;
+                                    let displayText: string;
+                                    let pageNumber: number | undefined;
+                                    
+                                    if (typeof source === 'string') {
+                                      // Legacy string format
+                                      sourceUrl = source;
+                                      const isUrl = source.startsWith('http://') || source.startsWith('https://');
+                                      displayText = isUrl ? new URL(source).hostname : (source.split('.')[0] ?? source);
+                                      pageNumber = undefined;
+                                    } else {
+                                      // New object format with filename and page
+                                      sourceUrl = source.filename;
+                                      const isUrl = source.filename.startsWith('http://') || source.filename.startsWith('https://');
+                                      displayText = isUrl ? new URL(source.filename).hostname : (source.filename.split('.')[0] ?? source.filename);
+                                      pageNumber = source.page;
+                                    }
+                                    
+                                    const isUrl = sourceUrl.startsWith('http://') || sourceUrl.startsWith('https://');
                                     
                                     return (
                                       <div key={index} className="flex items-center justify-between bg-primary-50 rounded-md px-3 py-2">
-                                        <span className="text-sm text-primary-600 truncate flex-1">{displayText}</span>
+                                        <div className="flex items-center gap-2 flex-1 truncate">
+                                          <span className="text-sm text-primary-600 truncate">{displayText}</span>
+                                          {pageNumber && (
+                                            <span className="text-xs bg-primary-200 text-primary-700 px-2 py-1 rounded-full font-medium">
+                                              Page {pageNumber}
+                                            </span>
+                                          )}
+                                        </div>
                                         {isUrl ? (
                                           <a
-                                            href={source}
+                                            href={sourceUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="ml-2 p-1 text-primary-500 hover:text-primary-700 hover:bg-primary-100 rounded transition-colors"
-                                            title={`Open ${source}`}
+                                            title={`Open ${sourceUrl}`}
                                           >
                                             <Link2Icon className="w-4 h-4" />
                                           </a>
@@ -1191,12 +1215,12 @@ const Chat: React.FC = () => {
                                             onClick={() => {
                                               // Create a download link for the source document
                                               const link = document.createElement('a');
-                                              link.href = `https://farmonrag.omadligrouphq.com/download/${source}`;
+                                              link.href = `https://farmonpagerag.omadligrouphq.com/files/download/${sourceUrl}`;
                                               link.target = '_blank';
                                               link.click();
                                             }}
                                             className="ml-2 p-1 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded transition-colors"
-                                            title={`Download ${source}`}
+                                            title={`Download ${sourceUrl}`}
                                           >
                                             <LinkIcon className="w-4 h-4" />
                                           </button>
