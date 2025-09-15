@@ -228,6 +228,8 @@ const Chat: React.FC = () => {
   };
 
   const streamResponse = async (messageText: string, conversationId: string) => {
+    let shouldRefreshHistory = false;
+    
     try {
       // Get auth token
       const token = localStorage.getItem('authToken');
@@ -262,11 +264,14 @@ const Chat: React.FC = () => {
           window.location.href = '/login';
           return;
         }
+        // Set flag to refresh history even on HTTP errors
+        shouldRefreshHistory = true;
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const reader = response.body?.getReader();
       if (!reader) {
+        shouldRefreshHistory = true;
         throw new Error('Response body is not readable');
       }
       
@@ -288,6 +293,7 @@ const Chat: React.FC = () => {
       let accumulatedSources: string[] = [];
       let actualUserMessageId: string | null = null;
       let actualAssistantMessageId: string | null = null;
+      let streamCompleted = false;
       
       try {
         while (true) {
@@ -305,9 +311,11 @@ const Chat: React.FC = () => {
                 // Capture actual message IDs from backend
                 if (data.user_message_id && !actualUserMessageId) {
                   actualUserMessageId = data.user_message_id;
+                  shouldRefreshHistory = true; // Message was created, need to refresh
                 }
                 if (data.assistant_message_id && !actualAssistantMessageId) {
                   actualAssistantMessageId = data.assistant_message_id;
+                  shouldRefreshHistory = true; // Message was created, need to refresh
                 }
                 
                 if (data.type === 'delta') {
@@ -358,6 +366,7 @@ const Chat: React.FC = () => {
                     scrollToBottom();
                   });
                 } else if (data.type === 'complete') {
+                  streamCompleted = true;
                   // Final update with completion timestamp
                   if (data.response) {
                     accumulatedContent = data.response; // Use the final formatted response
@@ -392,16 +401,6 @@ const Chat: React.FC = () => {
                      }
                     return msg;
                   }));
-                  
-                  // Call both conversations and history APIs after stream completes
-                  try {
-                    await Promise.all([
-                      loadConversations(), // Refresh conversations list
-                      loadMessages(conversationId) // Refresh conversation history
-                    ]);
-                  } catch (apiError) {
-                    console.error('Failed to refresh data after stream:', apiError);
-                  }
                   
                   return;
                 } else if (data.type === 'source_document') {
@@ -449,6 +448,7 @@ const Chat: React.FC = () => {
                     });
                   }
                 } else if (data.type === 'error') {
+                  shouldRefreshHistory = true; // Error occurred, but messages might have been created
                   throw new Error(data.error || data.response);
                 } else {
                   // Handle unknown event types gracefully
@@ -467,6 +467,19 @@ const Chat: React.FC = () => {
       // Remove temp assistant message on error
       setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-assistant-')));
       throw error;
+    } finally {
+      // Always refresh chat history if any messages were created or if there was an error
+      // This ensures the UI stays in sync with the backend state
+      if (shouldRefreshHistory) {
+        try {
+          await Promise.all([
+            loadConversations(), // Refresh conversations list
+            loadMessages(conversationId) // Refresh conversation history
+          ]);
+        } catch (apiError) {
+          console.error('Failed to refresh data after stream:', apiError);
+        }
+      }
     }
   };
 
