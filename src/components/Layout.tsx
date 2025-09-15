@@ -20,6 +20,8 @@ import {
   ChevronRight as ChevronRightIcon,
   MoreVertical as MoreVerticalIcon,
   Trash2 as DeleteIcon,
+  HelpCircle as QAIcon,
+  BarChart3 as StatsIcon,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -39,6 +41,7 @@ const allMenuItems = [
   { text: 'Profile', icon: <UserIcon />, path: '/profile', adminOnly: false },
   { text: 'Files', icon: <FolderIcon />, path: '/files', adminOnly: false },
   { text: 'Users', icon: <UsersIcon />, path: '/users', adminOnly: true },
+  { text: 'Q/A', icon: <QAIcon />, path: '/qa-management', adminOnly: true },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Loader2, AlertCircle, Users, Trash2, Eye, Edit, Building } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Loader2, AlertCircle, Users, Trash2, Eye, Edit, Building, MessageCircle, MessageSquare } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useUsersListStats } from '../hooks/useAnalytics';
 import { UserListItem } from '../types/analytics';
@@ -143,6 +143,9 @@ const UserManagement: React.FC = () => {
                         <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
                           User
                         </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                          Questions Count
+                        </th>
                         <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                           Joined
                         </th>
@@ -167,6 +170,14 @@ const UserManagement: React.FC = () => {
                                   {user.email || 'No email provided'}
                                 </div>
                               </div>
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell">
+                            <div className="flex items-center gap-2 justify-center">
+                              <MessageSquare className="w-5 h-5 text-blue-600" />
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {user.total_messages || 0}
+                              </span>
                             </div>
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">

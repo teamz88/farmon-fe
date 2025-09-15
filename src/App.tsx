@@ -11,6 +11,7 @@ import MagicLinkSetPassword from './pages/MagicLinkSetPassword'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import UserManagement from './pages/UserManagement'
+import QAManagement from './pages/QAManagement'
 import Profile from './pages/Profile'
 import { useAuth } from './hooks/useAuth'
 import { ChatProvider } from './contexts/ChatContext'
@@ -74,6 +75,7 @@ function App() {
                 />
                 <Route path="/files" element={<Files />} />
                 {isAdmin && <Route path="/users" element={<UserManagement />} />}
+                {isAdmin && <Route path="/qa-management" element={<QAManagement />} />}
                 {/* Redirect non-admin users away from admin-only routes */}
                 {!isAdmin && <Route path="/dashboard" element={<Navigate to="/chat" replace />} />}
                 {!isAdmin && <Route path="/files" element={<Navigate to="/chat" replace />} />}
