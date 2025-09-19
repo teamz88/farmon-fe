@@ -6,6 +6,7 @@ import { UserListItem } from '../types/analytics';
 import { authApi } from '../services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CompanyInfoDetailsModal from '../components/CompanyInfoDetailsModal';
+import UserProfileModal from '../components/UserProfileModal';
 
 const UserManagement: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -25,6 +26,10 @@ const UserManagement: React.FC = () => {
     show: false,
     user: null,
     companyInfo: null,
+  });
+  const [userProfileModal, setUserProfileModal] = useState<{ show: boolean; user: UserListItem | null }>({
+    show: false,
+    user: null,
   });
 
   const queryClient = useQueryClient();
@@ -98,6 +103,14 @@ const UserManagement: React.FC = () => {
     setCompanyInfoModal({ show: false, user: null, companyInfo: null });
   };
 
+  const openUserProfileModal = (user: UserListItem) => {
+    setUserProfileModal({ show: true, user });
+  };
+
+  const closeUserProfileModal = () => {
+    setUserProfileModal({ show: false, user: null });
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
@@ -159,7 +172,11 @@ const UserManagement: React.FC = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {(usersData?.results || []).map((user: UserListItem) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
+                        <tr 
+                          key={user.id} 
+                          className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                          onClick={() => openUserProfileModal(user)}
+                        >
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap sticky left-0 bg-white z-10">
                             <div className="flex items-center">
                               <div className="min-w-0 flex-1">
@@ -190,7 +207,10 @@ const UserManagement: React.FC = () => {
                             <div className="flex items-center justify-center space-x-2">
                               {user.role !== 'admin' && (
                                 <button
-                                  onClick={() => handleDeleteUser(user)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUser(user);
+                                  }}
                                   className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
                                   title="Delete user"
                                 >
@@ -366,6 +386,13 @@ const UserManagement: React.FC = () => {
         onClose={closeCompanyInfoModal}
         companyInfo={companyInfoModal.companyInfo}
         userName={companyInfoModal.user?.full_name || companyInfoModal.user?.username || ''}
+      />
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={userProfileModal.show}
+        onClose={closeUserProfileModal}
+        user={userProfileModal.user}
       />
     </div>
   );
