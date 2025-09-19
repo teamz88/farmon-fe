@@ -107,6 +107,16 @@ export interface DashboardStats {
   total_files: number;
   total_storage_used: number;
   
+  // Token stats
+  total_tokens_used: number;
+  input_tokens_used: number;
+  output_tokens_used: number;
+  
+  // Admin token stats
+  admin_tokens_used: number;
+  admin_input_tokens: number;
+  admin_output_tokens: number;
+  
   // Performance stats
   avg_response_time: number;
   error_rate: number;
@@ -313,6 +323,7 @@ export interface UserListItem {
   input_tokens_used?: number;
   output_tokens_used?: number;
   last_token_usage_date?: string | null;
+  chat_tokens_used?: number; // New field for ChatMessage tokens_used sum
   payment_history: any[];
   recent_activity: any[];
   is_active?: boolean;
@@ -327,4 +338,24 @@ export interface UsersListStats {
   page: number;
   page_size: number;
   total_pages: number;
+}
+
+export interface TokenUsageByUser {
+  success: boolean;
+  data: {
+    user_id: number;
+    username: string;
+    email: string;
+    full_name: string;
+    total_tokens: number;
+    input_tokens: number;
+    output_tokens: number;
+    message_count: number;
+    avg_tokens_per_message: number;
+  }[];
+  total_users: number;
+  date_range: {
+    start_date: string;
+    end_date: string;
+  };
 }

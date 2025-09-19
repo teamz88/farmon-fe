@@ -32,6 +32,7 @@ import {
 import dayjs from 'dayjs';
 import { useDashboardStats, useSubscriptionStats } from '../hooks/useAnalytics';
 import { useAuth } from '../hooks/useAuth';
+import AdminTokenUsageCard from '../components/AdminTokenUsageCard';
 
 ChartJS.register(
   CategoryScale,
@@ -331,7 +332,10 @@ const ComprehensiveDashboard: React.FC = () => {
         />
         <StatCard
           title="Token Usage"
-          value={formatNumber(dashboardStats?.total_tokens_used || 0)}
+          value={formatNumber(
+            (dashboardStats?.total_tokens_used || 0) + 
+            (dashboardStats?.chat_tokens_total || 0)
+          )}
           icon={<Activity className="w-6 h-6" />}
           color="#84CC16"
           subtitle="Total Tokens"
@@ -353,6 +357,9 @@ const ComprehensiveDashboard: React.FC = () => {
           loading={statsLoading}
         />
       </div>
+
+      {/* Admin Token Usage Section */}
+      <AdminTokenUsageCard className="mb-6 sm:mb-8" />
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">

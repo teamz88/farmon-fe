@@ -11,6 +11,7 @@ import {
   UserActivityStats,
   ErrorStats,
   SystemHealth,
+  TokenUsageByUser,
 } from '../types/analytics';
 
 // Analytics Events
@@ -234,5 +235,14 @@ export const useUsersListStats = (params?: {
     queryFn: () => analyticsApi.getUsersListStats(params),
     select: (data) => data.data,
     refetchInterval: 120000, // Refetch every 2 minutes
+  });
+};
+
+export const useTokenUsageByUser = (dateRange?: { start_date?: string; end_date?: string }) => {
+  return useQuery<TokenUsageByUser>({
+    queryKey: ['tokenUsageByUser', dateRange],
+    queryFn: () => analyticsApi.getTokenUsageByUser(dateRange),
+    select: (data) => data.data,
+    refetchInterval: 300000, // Refetch every 5 minutes
   });
 };

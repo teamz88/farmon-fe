@@ -15,6 +15,7 @@ import {
   PaymentStats,
   UserDashboardStats,
   UsersListStats,
+  TokenUsageByUser,
 } from '../types/analytics';
 import { SendMessageRequest } from '../types/chat';
 
@@ -352,6 +353,9 @@ export const analyticsApi = {
     subscription_type?: string;
     role?: string;
   }) => api.get<UsersListStats>('/analytics/users-list-stats/', { params }),
+
+  getTokenUsageByUser: (params?: { start_date?: string; end_date?: string }) =>
+    api.get<TokenUsageByUser>('/analytics/token-usage-by-user/', { params }),
 };
 
 
