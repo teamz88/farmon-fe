@@ -1449,13 +1449,13 @@ const Chat: React.FC = () => {
                       <span className="text-xs text-primary-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
                     </div>
                     <div className="flex gap-2">
-                      <button
+                      {/* <button
                         onClick={handleFileUpload}
                         disabled={uploadingFile}
                         className="px-3 py-1 text-sm bg-primary-400 text-white rounded hover:bg-primary-500 disabled:bg-primary-300 transition-colors"
                       >
                         {uploadingFile ? 'Uploading...' : 'Upload'}
-                      </button>
+                      </button> */}
                       <button
                         onClick={removeSelectedFile}
                         className="p-1 text-primary-400 hover:text-primary-600 transition-colors"
