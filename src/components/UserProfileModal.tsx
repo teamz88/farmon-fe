@@ -218,6 +218,43 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             </div>
 
+            {/* Token Usage Statistics */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                <FileText className="w-5 h-5" />
+                Token Usage Statistics
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-orange-600" />
+                    <label className="text-sm font-medium text-orange-700">Total Tokens</label>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-900">{user.total_tokens_used?.toLocaleString() || 0}</p>
+                </div>
+                <div className="bg-cyan-50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-cyan-600" />
+                    <label className="text-sm font-medium text-cyan-700">Input Tokens</label>
+                  </div>
+                  <p className="text-2xl font-bold text-cyan-900">{user.input_tokens_used?.toLocaleString() || 0}</p>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                    <label className="text-sm font-medium text-indigo-700">Output Tokens</label>
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-900">{user.output_tokens_used?.toLocaleString() || 0}</p>
+                </div>
+              </div>
+              {user.last_token_usage_date && (
+                <div className="mt-4">
+                  <label className="text-sm font-medium text-gray-500">Last Token Usage</label>
+                  <p className="text-gray-900">{dayjs(user.last_token_usage_date).format('MMMM DD, YYYY HH:mm')}</p>
+                </div>
+              )}
+            </div>
+
             {/* Payment Information */}
             {(user.total_payments || user.total_revenue || user.last_payment_date) && (
               <div className="border-t pt-6">

@@ -308,8 +308,14 @@ export interface UserListItem {
   login_count?: number;
   total_files?: number;
   total_messages?: number;
+  // Token usage fields
+  total_tokens_used?: number;
+  input_tokens_used?: number;
+  output_tokens_used?: number;
+  last_token_usage_date?: string | null;
   payment_history: any[];
   recent_activity: any[];
+  is_active?: boolean;
   // Legacy fields for backward compatibility
   created_at?: string;
   last_activity?: string;

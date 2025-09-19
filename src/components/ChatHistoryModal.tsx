@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MessageCircle, User, Bot, Calendar, Clock } from 'lucide-react';
+import { X, MessageCircle, User, Bot, Calendar, Clock, ArrowLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -23,6 +23,7 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [showMessages, setShowMessages] = useState(false); // For mobile navigation
 
   useEffect(() => {
     if (isOpen && user) {
@@ -60,7 +61,13 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
 
   const handleConversationClick = (conversationId: string) => {
     setSelectedConversation(conversationId);
+    setShowMessages(true); // Show messages view on mobile
     loadConversationMessages(conversationId);
+  };
+
+  const handleBackToConversations = () => {
+    setShowMessages(false);
+    setSelectedConversation(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -107,16 +114,16 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full sm:h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-primary-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-primary-200">
           <div className="flex items-center space-x-3">
-            <MessageCircle className="h-6 w-6 text-primary-600" />
+            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
             <div>
-              <h2 className="text-xl font-semibold text-primary-900">Chat History</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-primary-900">Chat History</h2>
               {user && (
-                <p className="text-sm text-primary-600">
+                <p className="text-xs sm:text-sm text-primary-600">
                   {user.full_name} ({user.email})
                 </p>
               )}
@@ -132,8 +139,8 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
 
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Conversations List */}
-          <div className="w-1/3 border-r border-primary-200 bg-primary-50 overflow-y-auto">
+          {/* Conversations List - Hidden on mobile when messages are shown */}
+          <div className={`w-full md:w-1/3 border-r border-primary-200 bg-primary-50 overflow-y-auto ${showMessages ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-4">
               <h3 className="text-sm font-medium text-primary-700 mb-3">Conversations</h3>
               {loading ? (
@@ -179,14 +186,24 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 flex flex-col">
+          {/* Messages - Full width on mobile, 2/3 width on desktop */}
+          <div className={`flex-1 flex flex-col ${!showMessages ? 'hidden md:flex' : 'flex'} md:w-2/3`}>
             {selectedConversation ? (
               <>
-                <div className="p-4 border-b border-primary-200 bg-primary-50">
-                  <h3 className="text-sm font-medium text-primary-700">Messages</h3>
+                {/* Messages Header with Back Button on Mobile */}
+                <div className="p-4 sm:p-6 border-b border-primary-200">
+                  <div className="flex items-center space-x-3">
+                    {/* Back button - only visible on mobile */}
+                    <button
+                      onClick={handleBackToConversations}
+                      className="md:hidden p-2 hover:bg-primary-100 rounded-full transition-colors"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-primary-500" />
+                    </button>
+                    <h3 className="text-base sm:text-lg font-medium text-primary-900">Messages</h3>
+                  </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 bg-white">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-6">
                   {messagesLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
@@ -194,10 +211,10 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                   ) : messages.length === 0 ? (
                     <div className="text-center py-8 text-primary-500">
                       <MessageCircle className="h-12 w-12 mx-auto mb-2 text-primary-300" />
-                      <p>No messages found</p>
+                      <p className="text-sm">No messages found</p>
                     </div>
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
@@ -205,27 +222,27 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                             message.message_type === 'user' ? 'items-end' : 'items-start'
                           }`}
                         >
-                          <div className={`flex items-start gap-3 w-full ${
+                          <div className={`flex items-start gap-2 sm:gap-3 w-full ${
                             message.message_type === 'user' ? 'flex-row-reverse' : 'flex-row'
                           }`}>
                             {message.message_type === 'assistant' && (
-                              <div className="w-10 h-10 rounded-full flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
-                                <img src="/farmon_fav.png" alt="Farmon" className="w-8 h-8" />
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
+                                <img src="/farmon_fav.png" alt="Farmon" className="w-6 h-6 sm:w-8 sm:h-8" />
                               </div>
                             )}
                             <div
-                              className={`rounded-xl px-5 py-4 shadow-sm ${
+                              className={`rounded-xl px-3 py-3 sm:px-5 sm:py-4 shadow-sm text-sm sm:text-base ${
                                 message.message_type === 'user'
-                                  ? 'bg-primary-400 text-white max-w-2xl'
-                                  : 'bg-primary-100 text-primary-900 max-w-3xl'
+                                  ? 'bg-primary-400 text-white max-w-xs sm:max-w-2xl'
+                                  : 'bg-primary-100 text-primary-900 max-w-sm sm:max-w-3xl'
                               }`}
                             >
                               {formatMessageContent(message)}
                               
                               {/* Sources section for assistant messages */}
                               {message.message_type === 'assistant' && message.sources && message.sources.length > 0 && (
-                                <div className="mt-3 pt-3 border-t border-primary-200">
-                                  <p className="text-sm font-medium text-primary-700 mb-2">Sources:</p>
+                                <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-primary-200">
+                                  <p className="text-xs sm:text-sm font-medium text-primary-700 mb-2">Sources:</p>
                                   <div className="space-y-1">
                                     {message.sources.map((source, index) => {
                                       // Handle both string sources (legacy) and object sources (new format)
@@ -248,11 +265,11 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                                       }
                                       
                                       return (
-                                        <div key={index} className="flex items-center justify-between bg-primary-50 rounded-md px-3 py-2">
-                                          <div className="flex items-center gap-2 flex-1 truncate">
-                                            <span className="text-sm text-primary-600 truncate">{displayText}</span>
+                                        <div key={index} className="flex items-center justify-between bg-primary-50 rounded-md px-2 py-1.5 sm:px-3 sm:py-2">
+                                          <div className="flex items-center gap-1 sm:gap-2 flex-1 truncate">
+                                            <span className="text-xs sm:text-sm text-primary-600 truncate">{displayText}</span>
                                             {pageNumber && (
-                                              <span className="text-xs bg-primary-200 text-primary-700 px-2 py-1 rounded-full font-medium">
+                                              <span className="text-xs bg-primary-200 text-primary-700 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-medium">
                                                 Page {pageNumber}
                                               </span>
                                             )}
@@ -272,10 +289,10 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-primary-500">
+              <div className="flex-1 flex items-center justify-center text-primary-500 p-4">
                 <div className="text-center">
-                  <MessageCircle className="h-16 w-16 mx-auto mb-4 text-primary-300" />
-                  <p>Select a conversation to view messages</p>
+                  <MessageCircle className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-primary-300" />
+                  <p className="text-sm sm:text-base">Select a conversation to view messages</p>
                 </div>
               </div>
             )}

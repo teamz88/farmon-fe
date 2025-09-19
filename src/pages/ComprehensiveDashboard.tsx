@@ -330,11 +330,11 @@ const ComprehensiveDashboard: React.FC = () => {
           link="/users"
         />
         <StatCard
-          title="System Performance"
-          value={`${(dashboardStats?.uptime_percentage || 99.9).toFixed(1)}%`}
+          title="Token Usage"
+          value={formatNumber(dashboardStats?.total_tokens_used || 0)}
           icon={<Activity className="w-6 h-6" />}
           color="#84CC16"
-          subtitle="Uptime"
+          subtitle="Total Tokens"
           loading={statsLoading}
         />
         <StatCard

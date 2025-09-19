@@ -159,6 +159,9 @@ const UserManagement: React.FC = () => {
                         <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                           Questions Count
                         </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                          Token Usage
+                        </th>
                         <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                           Joined
                         </th>
@@ -195,6 +198,20 @@ const UserManagement: React.FC = () => {
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {user.total_messages || 0}
                               </span>
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden xl:table-cell">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">Total:</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  {user.total_tokens_used || 0}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <span>In: {user.input_tokens_used || 0}</span>
+                                <span>Out: {user.output_tokens_used || 0}</span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
