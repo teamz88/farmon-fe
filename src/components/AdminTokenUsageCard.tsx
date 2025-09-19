@@ -37,7 +37,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
       <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 ${className}`}>
         <div className="text-center text-red-600">
           <Activity className="w-8 h-8 mx-auto mb-2" />
-          <p>Token statistikalarini yuklashda xatolik yuz berdi</p>
+          <p>Error loading token statistics</p>
         </div>
       </div>
     );
@@ -53,7 +53,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <Activity className="w-5 h-5 mr-2 text-blue-600" />
-          Admin Token Usage Statistics
+          Token Usage Statistics
         </h3>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -68,7 +68,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
         <div className="flex items-center space-x-4">
           <Calendar className="w-4 h-4 text-gray-600" />
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Sana oralig'i:</label>
+            <label className="text-sm font-medium text-gray-700">Date Range:</label>
             <input
               type="date"
               value={dateRange.start_date}
@@ -91,7 +91,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-700">Jami foydalanuvchilar</p>
+              <p className="text-sm font-medium text-blue-700">Total Chat Used Users</p>
               <p className="text-2xl font-bold text-blue-900">
                 {isLoading ? '...' : formatNumber(totalUsers)}
               </p>
@@ -102,7 +102,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
         <div className="bg-green-50 p-4 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-green-700">Jami tokenlar</p>
+              <p className="text-sm font-medium text-green-700">Total Tokens</p>
               <p className="text-2xl font-bold text-green-900">
                 {isLoading ? '...' : formatNumber(totalTokens)}
               </p>
@@ -113,7 +113,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
         <div className="bg-purple-50 p-4 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-purple-700">O'rtacha token/xabar</p>
+              <p className="text-sm font-medium text-purple-700">Avg Tokens/Message</p>
               <p className="text-2xl font-bold text-purple-900">
                 {isLoading ? '...' : formatNumber(
                   tokenUsageData?.data?.reduce((sum, user) => sum + user.avg_tokens_per_message, 0) / (tokenUsageData?.data?.length || 1) || 0
@@ -128,7 +128,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
       {/* Top Users Table */}
       {isExpanded && (
         <div className="mt-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Eng ko'p token ishlatgan foydalanuvchilar</h4>
+          <h4 className="text-md font-semibold text-gray-900 mb-4">Top Token Users</h4>
           {isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -139,22 +139,22 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Foydalanuvchi
+                      User
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Jami tokenlar
+                      Total Tokens
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kirish tokenlar
+                      Input Tokens
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Chiqish tokenlar
+                      Output Tokens
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Xabarlar soni
+                      Messages Count
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      O'rtacha/xabar
+                      Avg/Message
                     </th>
                   </tr>
                 </thead>
@@ -197,7 +197,7 @@ const AdminTokenUsageCard: React.FC<AdminTokenUsageCardProps> = ({ className = '
               </table>
               {topUsers.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  Tanlangan sana oralig'ida ma'lumot topilmadi
+                  No data found for the selected date range
                 </div>
               )}
             </div>
