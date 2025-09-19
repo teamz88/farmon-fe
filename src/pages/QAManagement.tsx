@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MessageSquare, Clock, User, ChevronLeft, ChevronRight, Loader2, AlertCircle, Filter } from 'lucide-react';
 import api from '../services/api';
+import ChatHistoryModal from '../components/ChatHistoryModal';
 
 interface QAItem {
   id: number;
@@ -46,6 +47,38 @@ const QAManagement: React.FC = () => {
   const [pageSize] = useState(10);
   const [dateFilter, setDateFilter] = useState('');
   const [userFilter, setUserFilter] = useState('');
+  
+  // Chat history modal state
+  const [chatHistoryModal, setChatHistoryModal] = useState<{
+    show: boolean;
+    user: {
+      id: number;
+      email: string;
+      full_name: string;
+    } | null;
+  }>({
+    show: false,
+    user: null
+  });
+
+  // Chat history modal handlers
+  const openChatHistoryModal = (user: QAItem['user']) => {
+    setChatHistoryModal({
+      show: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: `${user.first_name} ${user.last_name}`.trim() || user.username
+      }
+    });
+  };
+
+  const closeChatHistoryModal = () => {
+    setChatHistoryModal({
+      show: false,
+      user: null
+    });
+  };
 
   useEffect(() => {
     fetchQAData();
@@ -231,7 +264,10 @@ const QAManagement: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {qaData && qaData.length > 0 ? qaData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                    onClick={() => openChatHistoryModal(item.user)}
+                  >
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -239,7 +275,7 @@ const QAManagement: React.FC = () => {
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors">
                           {item.user.first_name && item.user.last_name 
                             ? `${item.user.first_name} ${item.user.last_name}` 
                             : item.user.username}
@@ -295,14 +331,17 @@ const QAManagement: React.FC = () => {
         {qaData && qaData.length > 0 ? qaData.map((item) => (
           <div key={item.id} className="bg-white rounded-lg shadow-sm border p-4">
             {/* User Info */}
-            <div className="flex items-center mb-3">
+            <div 
+              className="flex items-center mb-3 cursor-pointer"
+              onClick={() => openChatHistoryModal(item.user)}
+            >
               <div className="flex-shrink-0 h-8 w-8">
                 <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
                   <User className="h-4 w-4 text-primary-600" />
                 </div>
               </div>
               <div className="ml-3 flex-1">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors">
                   {item.user.first_name && item.user.last_name 
                     ? `${item.user.first_name} ${item.user.last_name}` 
                     : item.user.username}
@@ -458,6 +497,13 @@ const QAManagement: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Chat History Modal */}
+      <ChatHistoryModal
+        isOpen={chatHistoryModal.show}
+        onClose={closeChatHistoryModal}
+        user={chatHistoryModal.user}
+      />
     </div>
   );
 };
