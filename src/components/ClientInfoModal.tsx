@@ -184,7 +184,7 @@ const ClientInfoModal: React.FC<ClientInfoModalProps> = ({ isOpen, onClose, onCo
               <X className="w-6 h-6" />
             </button>
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <Building className="w-6 h-6 text-primary" />
+              <Building className="w-6 h-6 text-primary-500" />
               Tell Us About Your Business
             </CardTitle>
             <CardDescription className="text-center text-gray-600">

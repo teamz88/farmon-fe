@@ -131,7 +131,7 @@ const Register: React.FC = () => {
         <Card className="bg-white border border-gray-200 shadow-lg">
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <UserPlus className="w-6 h-6 text-primary" />
+              <UserPlus className="w-6 h-6 text-primary-500" />
               Sign Up
             </CardTitle>
             <CardDescription className="text-center text-gray-600">
@@ -155,7 +155,7 @@ const Register: React.FC = () => {
                     First Name *
                   </Label>
                   <div className="relative group">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                     <Input
                       id="firstName"
                       name="firstName"
@@ -174,7 +174,7 @@ const Register: React.FC = () => {
                     Last Name *
                   </Label>
                   <div className="relative group">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                     <Input
                       id="lastName"
                       name="lastName"
@@ -195,7 +195,7 @@ const Register: React.FC = () => {
                   Username *
                 </Label>
                 <div className="relative group">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="username"
                     name="username"
@@ -215,7 +215,7 @@ const Register: React.FC = () => {
                   Email Address *
                 </Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="email"
                     name="email"
@@ -235,7 +235,7 @@ const Register: React.FC = () => {
                   Phone Number
                 </Label>
                 <div className="relative group">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="phoneNumber"
                     name="phoneNumber"
@@ -254,7 +254,7 @@ const Register: React.FC = () => {
                   Password *
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="password"
                     name="password"
@@ -298,7 +298,7 @@ const Register: React.FC = () => {
                   Confirm Password *
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -359,7 +359,7 @@ const Register: React.FC = () => {
               {/* Sign in link */}
               <div className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link to="/login" className="text-primary hover:text-primary-700 font-medium transition-colors">
+                <Link to="/login" className="text-primary-500 hover:text-primary-700 font-medium transition-colors">
                   Sign in here
                 </Link>
               </div>

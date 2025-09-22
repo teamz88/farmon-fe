@@ -69,7 +69,7 @@ const Login: React.FC = () => {
         <Card className="bg-white border border-gray-200 shadow-lg">
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <LogIn className="w-6 h-6 text-primary" />
+              <LogIn className="w-6 h-6 text-primary-500" />
               Sign In
             </CardTitle>
             <CardDescription className="text-center text-gray-600">
@@ -91,7 +91,7 @@ const Login: React.FC = () => {
                   Username or Email
                 </Label>
                 <div className="relative group">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="usernameOrEmail"
                     type="text"
@@ -109,7 +109,7 @@ const Login: React.FC = () => {
                   Password
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}

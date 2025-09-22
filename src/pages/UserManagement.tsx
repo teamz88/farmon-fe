@@ -139,7 +139,7 @@ const UserManagement: React.FC = () => {
 
           {loading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
             </div>
           ) : error ? (
             <div className="bg-error-50 border border-error-200 rounded-lg p-4 flex items-center space-x-2">

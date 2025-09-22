@@ -1502,7 +1502,7 @@ const Chat: React.FC = () => {
                 <button
                   onClick={sendMessage}
                   disabled={loading}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors"
+                  className={`absolute cursor-pointer right-2 top-1/2 transform -translate-y-1/2 p-2 ${selectedFile ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-300' : 'bg-primary-400 hover:bg-primary-500 disabled:bg-primary-300'} text-white rounded-lg disabled:cursor-not-allowed transition-colors`}
                 >
                   <SendIcon className="w-4 h-4" />
                 </button>

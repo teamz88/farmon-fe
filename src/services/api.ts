@@ -429,20 +429,21 @@ export const chatApi = {
 
 // Files API
 export const filesApi = {
-  // File management
+  // File operations
   uploadFile: (formData: FormData, config?: any) => api.post('/files/upload/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     timeout: 300000, // 5 minutes for file uploads
     ...config
   }),
-  getFiles: (params?: { page?: number; search?: string; category?: string }) =>
+  getFiles: (params?: { page?: number; search?: string; category?: string; folder?: string }) =>
     api.get('/files/', { params }),
   getFile: (id: string) => api.get(`/files/${id}/`),
   updateFile: (id: string, data: any) => api.patch(`/files/${id}/`, data),
-  // Admin delete file (hard delete)
+  moveFileToFolder: (fileId: string, folderId: string | null) => 
+    api.patch(`/files/${fileId}/move/`, { folder_id: folderId }),
+  // Admin file operations
   adminDeleteFile: (fileId: string) => api.delete(`/files/admin/${fileId}/delete/`),
-
-  // Admin bulk delete files (hard delete)
+  // Bulk operations
   adminBulkDelete: (fileIds: string[]) => api.post('/files/admin/bulk-delete/', { file_ids: fileIds }),
 
   deleteFile: (id: string) => api.delete(`/files/${id}/`),
@@ -451,12 +452,11 @@ export const filesApi = {
 
   // File sharing
   shareFile: (data: { file_id?: string } | string) => {
-    const payload = typeof data === 'string' ? { file_id: data } : data;
-    return api.post('/files/share/', payload);
+    const fileId = typeof data === 'string' ? data : data.file_id;
+    return api.post(`/files/${fileId}/share/`, typeof data === 'object' ? data : {});
   },
   getFileShares: (fileId?: string) => {
-    const url = fileId ? `/files/${fileId}/shares/` : '/files/shares/';
-    return api.get(url);
+    return fileId ? api.get(`/files/${fileId}/shares/`) : api.get('/files/shares/');
   },
 
   // File comments
@@ -467,13 +467,28 @@ export const filesApi = {
   // File versions
   getFileVersions: (fileId: string) => api.get(`/files/${fileId}/versions/`),
 
-  // Stats and bulk actions
+  // File statistics
   getFileStats: () => api.get('/files/stats/'),
   bulkAction: (data: { action: string; file_ids: string[] }) =>
     api.post('/files/bulk-action/', data),
 
   // Admin analytics
   getAdminAnalytics: () => api.get('/files/admin/analytics/'),
+
+  // Folder operations
+  getFolders: (params?: { parent?: string }) => api.get('/files/folders/', { params }),
+  getFolderTree: () => api.get('/files/folders/tree/'),
+  createFolder: (data: { name: string; description?: string; color?: string; parent?: string }) => 
+    api.post('/files/folders/', data),
+  getFolder: (id: string) => api.get(`/files/folders/${id}/`),
+  updateFolder: (id: string, data: { name?: string; description?: string; color?: string }) => 
+    api.put(`/files/folders/${id}/`, data),
+  deleteFolder: (id: string) => api.delete(`/files/folders/${id}/`),
+  moveFolder: (id: string, data: { parent?: string }) =>
+    api.post(`/files/folders/${id}/move/`, data),
+  restoreFolder: (id: string) => api.post(`/files/folders/${id}/restore/`),
+  getFolderContents: (id: string) => api.get(`/files/folders/${id}/contents/`),
+  getFolderBreadcrumbs: (id: string) => api.get(`/files/folders/${id}/breadcrumbs/`),
 };
 
 export default api;

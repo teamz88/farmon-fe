@@ -28,7 +28,27 @@ export interface FileItem {
     username: string;
     email: string;
   };
+  folder?: {
+    id: string;
+    name: string;
+    color?: string;
+  };
+  folder_path?: string;
   metadata?: Record<string, any>;
+}
+
+export interface FolderItem {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  parent?: string;
+  user: string;
+  path: string;
+  files_count: number;
+  children_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface FileShare {

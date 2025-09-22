@@ -192,7 +192,7 @@ const QAManagement: React.FC = () => {
       </div>
 
       {/* Summary Card */}
-      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex items-center">
           <div className="p-2 sm:p-3 rounded-full bg-blue-100">
             <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
@@ -205,7 +205,7 @@ const QAManagement: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-1 md:grid-cols-3 sm:gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
@@ -242,7 +242,7 @@ const QAManagement: React.FC = () => {
       </div>
 
       {/* Q/A Table - Desktop */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm border overflow-hidden relative">
+      <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden relative">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

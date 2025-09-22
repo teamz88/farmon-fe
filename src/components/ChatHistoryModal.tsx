@@ -115,15 +115,15 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full sm:h-[80vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-full sm:h-[85vh] md:h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-primary-200">
-          <div className="flex items-center space-x-3">
-            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-primary-900">Chat History</h2>
+        <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-primary-200 flex-shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 flex-shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold text-primary-900 truncate">Chat History</h2>
               {user && (
-                <p className="text-xs sm:text-sm text-primary-600">
+                <p className="text-xs sm:text-sm text-primary-600 truncate">
                   {user.full_name} ({user.email})
                 </p>
               )}
@@ -131,7 +131,7 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-primary-100 rounded-full transition-colors"
+            className="p-2 hover:bg-primary-100 rounded-full transition-colors flex-shrink-0"
           >
             <X className="h-5 w-5 text-primary-500" />
           </button>
@@ -140,8 +140,8 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Conversations List - Hidden on mobile when messages are shown */}
-          <div className={`w-full md:w-1/3 border-r border-primary-200 bg-primary-50 overflow-y-auto ${showMessages ? 'hidden md:flex' : 'flex'}`}>
-            <div className="p-4">
+          <div className={`w-full md:w-1/3 lg:w-1/4 border-r border-primary-200 bg-primary-50 overflow-y-auto ${showMessages ? 'hidden md:flex' : 'flex'} flex-col`}>
+            <div className="p-3 sm:p-4 flex-1">
               <h3 className="text-sm font-medium text-primary-700 mb-3">Conversations</h3>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
@@ -149,8 +149,8 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="text-center py-8 text-primary-500">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-2 text-primary-300" />
-                  <p>No conversations found</p>
+                  <MessageCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-primary-300" />
+                  <p className="text-xs sm:text-sm">No conversations found</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -158,7 +158,7 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                     <div
                       key={conversation.id}
                       onClick={() => handleConversationClick(conversation.id)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-colors ${
                         selectedConversation === conversation.id
                           ? 'bg-primary-200 border-primary-300'
                           : 'bg-white hover:bg-primary-100'
@@ -166,16 +166,16 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-primary-900 truncate">
+                          <h4 className="text-xs sm:text-sm font-medium text-primary-900 line-clamp-2 leading-tight">
                             {conversation.title}
                           </h4>
                           <div className="flex items-center mt-1 text-xs text-primary-600">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(conversation.created_at)}
+                            <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{formatDate(conversation.created_at)}</span>
                           </div>
                           <div className="flex items-center mt-1 text-xs text-primary-600">
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            {conversation.message_count} messages
+                            <MessageCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span>{conversation.message_count} messages</span>
                           </div>
                         </div>
                       </div>
@@ -187,34 +187,34 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
           </div>
 
           {/* Messages - Full width on mobile, 2/3 width on desktop */}
-          <div className={`flex-1 flex flex-col ${!showMessages ? 'hidden md:flex' : 'flex'} md:w-2/3`}>
+          <div className={`flex-1 flex flex-col ${!showMessages ? 'hidden md:flex' : 'flex'} md:w-2/3 lg:w-3/4`}>
             {selectedConversation ? (
               <>
                 {/* Messages Header with Back Button on Mobile */}
-                <div className="p-4 sm:p-6 border-b border-primary-200">
-                  <div className="flex items-center space-x-3">
+                <div className="p-3 sm:p-4 md:p-6 border-b border-primary-200 flex-shrink-0">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     {/* Back button - only visible on mobile */}
                     <button
                       onClick={handleBackToConversations}
-                      className="md:hidden p-2 hover:bg-primary-100 rounded-full transition-colors"
+                      className="md:hidden p-1.5 sm:p-2 hover:bg-primary-100 rounded-full transition-colors flex-shrink-0"
                     >
-                      <ArrowLeft className="h-5 w-5 text-primary-500" />
+                      <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-primary-500" />
                     </button>
-                    <h3 className="text-base sm:text-lg font-medium text-primary-900">Messages</h3>
+                    <h3 className="text-sm sm:text-base md:text-lg font-medium text-primary-900 truncate">Messages</h3>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+                <div className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-6">
                   {messagesLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="text-center py-8 text-primary-500">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-2 text-primary-300" />
-                      <p className="text-sm">No messages found</p>
+                      <MessageCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-primary-300" />
+                      <p className="text-xs sm:text-sm">No messages found</p>
                     </div>
                   ) : (
-                    <div className="space-y-4 sm:space-y-6">
+                    <div className="space-y-3 sm:space-y-4 md:space-y-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
@@ -226,15 +226,15 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                             message.message_type === 'user' ? 'flex-row-reverse' : 'flex-row'
                           }`}>
                             {message.message_type === 'assistant' && (
-                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
-                                <img src="/farmon_fav.png" alt="Farmon" className="w-6 h-6 sm:w-8 sm:h-8" />
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center overflow-hidden justify-center text-white text-base font-medium flex-shrink-0 shadow-md">
+                                <img src="/farmon_fav.png" alt="Farmon" className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                               </div>
                             )}
                             <div
-                              className={`rounded-xl px-3 py-3 sm:px-5 sm:py-4 shadow-sm text-sm sm:text-base ${
+                              className={`rounded-xl px-2 py-2 sm:px-3 sm:py-3 md:px-5 md:py-4 shadow-sm text-xs sm:text-sm md:text-base ${
                                 message.message_type === 'user'
-                                  ? 'bg-primary-400 text-white max-w-xs sm:max-w-2xl'
-                                  : 'bg-primary-100 text-primary-900 max-w-sm sm:max-w-3xl'
+                                  ? 'bg-primary-400 text-white max-w-[85%] sm:max-w-xs md:max-w-2xl'
+                                  : 'bg-primary-100 text-primary-900 max-w-[90%] sm:max-w-sm md:max-w-3xl'
                               }`}
                             >
                               {formatMessageContent(message)}
@@ -266,10 +266,10 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, us
                                       
                                       return (
                                         <div key={index} className="flex items-center justify-between bg-primary-50 rounded-md px-2 py-1.5 sm:px-3 sm:py-2">
-                                          <div className="flex items-center gap-1 sm:gap-2 flex-1 truncate">
-                                            <span className="text-xs sm:text-sm text-primary-600 truncate">{displayText}</span>
+                                          <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+                                            <span className="text-xs sm:text-sm text-primary-600 line-clamp-2 break-words">{displayText}</span>
                                             {pageNumber && (
-                                              <span className="text-xs bg-primary-200 text-primary-700 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-medium">
+                                              <span className="text-xs bg-primary-200 text-primary-700 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-medium whitespace-nowrap">
                                                 Page {pageNumber}
                                               </span>
                                             )}

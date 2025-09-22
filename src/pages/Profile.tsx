@@ -384,7 +384,7 @@ const Profile: React.FC = () => {
                     name="email_notifications"
                     checked={profileForm.email_notifications}
                     onChange={handleProfileInputChange}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                    className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
                   />
                   <Label htmlFor="email_notifications" className="text-sm">
                     Receive email notifications

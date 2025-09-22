@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   CloudUpload,
   Download,
   Trash2,
   Share,
   MoreVertical,
-  Folder,
   File,
   Image,
   Video,
@@ -17,10 +16,15 @@ import {
   Grid,
   List,
   Shield,
+  Move,
 } from 'lucide-react';
 import { filesApi } from '../services/api';
-import { FileItem, FileStats, FileListResponse } from '../types/files';
+import { FileItem, FileStats, FolderItem } from '../types/files';
 import { useAuth } from '../hooks/useAuth';
+import FolderTree, { FolderTreeRef } from '../components/FolderTree';
+import CreateFolderModal from '../components/CreateFolderModal';
+import MoveFolderModal from '../components/MoveFolderModal';
+import FolderBreadcrumbs from '../components/FolderBreadcrumbs';
 
 const Files: React.FC = () => {
   const { user } = useAuth();
@@ -38,16 +42,45 @@ const Files: React.FC = () => {
   const [menuFile, setMenuFile] = useState<FileItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  
+  // Multiple file upload state
+  const [selectedUploadFiles, setSelectedUploadFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState<{[key: string]: number}>({});
+  const [isDragOver, setIsDragOver] = useState(false);
+  
+  // Folder-related state
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(() => {
+    // Load saved folder ID from localStorage
+    return localStorage.getItem('files-current-folder-id') || null;
+  });
+  const [currentFolder, setCurrentFolder] = useState<FolderItem | null>(null);
+  const [folderPath, setFolderPath] = useState<FolderItem[]>([]);
+  const [showFolderTree, setShowFolderTree] = useState(true);
+  const [createFolderModal, setCreateFolderModal] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
+  const [parentFolderId, setParentFolderId] = useState<string | undefined>();
+
+  // Drag and drop state
+  const [draggedFile, setDraggedFile] = useState<string | null>(null);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+
+  // Move to folder modal state
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [fileToMove, setFileToMove] = useState<FileItem | null>(null);
+
+  // Ref for FolderTree component
+  const folderTreeRef = useRef<FolderTreeRef>(null);
 
   useEffect(() => {
     loadFiles();
     loadStats();
-  }, []);
+  }, [currentFolderId]);
 
   const loadFiles = async () => {
     try {
       setLoading(true);
-      const response = await filesApi.getFiles();
+      setError(null);
+      const response = await filesApi.getFiles({ folder: currentFolderId || undefined });
       setFiles(response.data.results || response.data);
     } catch (error) {
       console.error('Failed to load files:', error);
@@ -67,36 +100,82 @@ const Files: React.FC = () => {
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('name', file.name);
+    setSelectedUploadFiles(files);
+    setUploadDialog(true);
+  };
+
+  const handleMultipleFileUpload = async () => {
+    if (selectedUploadFiles.length === 0) return;
 
     try {
       setLoading(true);
-      setUploadProgress(0);
-      
-      await filesApi.uploadFile(formData, {
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total || 1)
-          );
-          setUploadProgress(progress);
+      const uploadPromises = selectedUploadFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', file.name);
+        
+        // Add folder if a folder is currently selected
+        if (currentFolderId) {
+          formData.append('folder', currentFolderId);
         }
+
+        return filesApi.uploadFile(formData, {
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+            );
+            setUploadingFiles(prev => ({
+              ...prev,
+              [file.name]: progress
+            }));
+          }
+        });
       });
+
+      await Promise.all(uploadPromises);
       
       setUploadDialog(false);
+      setSelectedUploadFiles([]);
+      setUploadingFiles({});
+      
+      // Refresh files for the current folder
       await loadFiles();
       await loadStats();
       setError(null);
+      
+      // If we're in a specific folder, also refresh the folder tree
+      if (currentFolderId && folderTreeRef.current) {
+        folderTreeRef.current.refresh();
+      }
     } catch (error) {
-      console.error('Failed to upload file:', error);
-      setError('Failed to upload file');
+      console.error('Failed to upload files:', error);
+      setError('Failed to upload files');
     } finally {
       setLoading(false);
-      setUploadProgress(0);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setSelectedUploadFiles(files);
+      setUploadDialog(true);
     }
   };
 
@@ -181,6 +260,76 @@ const Files: React.FC = () => {
     }
   };
 
+  // Folder management functions
+  const handleFolderSelect = (folderId: string | null) => {
+    setCurrentFolderId(folderId);
+    setSelectedFiles([]);
+    // Save to localStorage for persistence
+    if (folderId) {
+      localStorage.setItem('files-current-folder-id', folderId);
+    } else {
+      localStorage.removeItem('files-current-folder-id');
+    }
+    // TODO: Load folder details and path
+  };
+
+  const handleCreateFolder = (parentId?: string) => {
+    setParentFolderId(parentId);
+    setEditingFolder(null);
+    setCreateFolderModal(true);
+  };
+
+  const handleEditFolder = (folder: FolderItem) => {
+    setEditingFolder(folder);
+    setParentFolderId(undefined);
+    setCreateFolderModal(true);
+  };
+
+  const handleDeleteFolder = async (folder: FolderItem) => {
+    if (window.confirm(`Are you sure you want to delete the folder "${folder.name}"?`)) {
+      try {
+        await filesApi.deleteFolder(folder.id);
+        await loadFiles();
+        if (currentFolderId === folder.id) {
+          setCurrentFolderId(null);
+        }
+      } catch (error) {
+        console.error('Failed to delete folder:', error);
+        setError('Failed to delete folder');
+      }
+    }
+  };
+
+  const handleMoveFolder = (folder: FolderItem) => {
+    // TODO: Implement folder move functionality
+    console.log('Move folder:', folder);
+  };
+
+  // Move file to folder function
+  const moveFileToFolder = async (fileId: string, folderId: string | null) => {
+    try {
+      await filesApi.moveFileToFolder(fileId, folderId);
+      await loadFiles();
+      await loadStats(); // Also refresh stats after moving files
+      // Refresh folder tree after moving files
+      if (folderTreeRef.current) {
+        folderTreeRef.current.refresh();
+      }
+      setDraggedFile(null);
+      setDragOverFolder(null);
+      setError(null); // Clear any previous errors
+    } catch (error) {
+      console.error('Failed to move file:', error);
+      setError('Failed to move file to folder');
+    }
+  };
+
+  const handleFolderModalSuccess = () => {
+    loadFiles();
+    // Refresh folder tree after creating/editing folder
+    folderTreeRef.current?.refresh();
+  };
+
   const formatFileSize = (bytes: number | null | undefined) => {
     if (bytes === null || bytes === undefined || bytes === 0) return '0 Bytes';
     if (bytes < 0) return 'Invalid Size';
@@ -232,6 +381,12 @@ const Files: React.FC = () => {
     setMenuFile(null);
   };
 
+  const handleMoveToFolder = (file: FileItem) => {
+    setFileToMove(file);
+    setShowMoveModal(true);
+    handleMenuClose();
+  };
+
   const handleSelectFile = (fileId: string) => {
     setSelectedFiles(prev => 
       prev.includes(fileId) 
@@ -245,32 +400,78 @@ const Files: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 pt-5">
-      {error && (
-        <div className="mx-3 sm:mx-6 bg-error-50 border border-error-200 rounded-lg p-4 mb-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-error" />
-            <span className="text-error-800">{error}</span>
+    <div 
+      className={`w-full min-h-screen bg-gray-50 pt-5 ${isDragOver ? 'bg-primary-50' : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="fixed inset-0 bg-primary-500 bg-opacity-20 flex items-center justify-center z-40 pointer-events-none">
+          <div className="bg-white rounded-lg p-8 shadow-lg border-2 border-dashed border-primary-400">
+            <CloudUpload className="w-12 h-12 text-primary-500 mx-auto mb-4" />
+            <p className="text-lg font-semibold text-primary-700">Drop files here to upload</p>
+            {currentFolderId && (
+              <p className="text-sm text-primary-600 mt-2">Files will be uploaded to current folder</p>
+            )}
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-error hover:text-error-800"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
+      {/* Main Content */}
+      <div className="flex-1 min-w-0">
+        {error && (
+          <div className="mx-3 sm:mx-6 bg-error-50 border border-error-200 rounded-lg p-4 mb-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-error" />
+              <span className="text-error-800">{error}</span>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-error hover:text-error-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Folder Tree at Top */}
+        {showFolderTree && (
+          <div className="mx-3 sm:mx-6 mb-4">
+            <FolderTree
+              ref={folderTreeRef}
+              onFolderSelect={handleFolderSelect}
+              selectedFolderId={currentFolderId}
+              onCreateFolder={handleCreateFolder}
+              onEditFolder={handleEditFolder}
+              onDeleteFolder={handleDeleteFolder}
+              onMoveFolder={handleMoveFolder}
+              draggedFile={draggedFile}
+              dragOverFolder={dragOverFolder}
+              onDragOverFolder={setDragOverFolder}
+              onDropFile={moveFileToFolder}
+            />
+          </div>
+        )}
+
+        {/* Folder Breadcrumbs */}
+        <div className="mx-3 sm:mx-6 mb-4">
+          <FolderBreadcrumbs
+            currentFolder={currentFolder}
+            folderPath={folderPath}
+            onNavigate={handleFolderSelect}
+          />
+        </div>
 
       {/* Loading State */}
       {loading && files.length === 0 && (
         <div className="mx-3 sm:mx-6 bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading files...</p>
         </div>
       )}
 
       {/* Empty State */}
-      {!loading && (
+      {/* {!loading && (
         <div className="mx-3 sm:mx-6 mb-5 bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <File className="w-8 h-8 text-gray-400" />
@@ -285,7 +486,7 @@ const Files: React.FC = () => {
             <span>Upload File</span>
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Toolbar */}
       <div className="mx-3 sm:mx-6 bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
@@ -300,7 +501,7 @@ const Files: React.FC = () => {
                 onClick={() => setViewMode('table')}
                 className={`p-1.5 sm:p-2 rounded-md transition-colors ${
                   viewMode === 'table'
-                    ? 'bg-white text-primary shadow-sm'
+                    ? 'bg-white text-primary-500 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 title="Table View"
@@ -311,7 +512,7 @@ const Files: React.FC = () => {
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 sm:p-2 rounded-md transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white text-primary shadow-sm'
+                    ? 'bg-white text-primary-500 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 title="Grid View"
@@ -345,7 +546,7 @@ const Files: React.FC = () => {
             )}
             <button
               onClick={() => setUploadDialog(true)}
-              className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+              className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-primary-500 cursor-pointer text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
             >
               <CloudUpload className="w-4 h-4" />
               <span className="hidden sm:inline">Upload File</span>
@@ -356,16 +557,37 @@ const Files: React.FC = () => {
       </div>
 
       {/* Files Display */}
+      {currentFolderId === null && (
+        <div className="mx-3 sm:mx-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <File className="w-5 h-5 mr-2" />
+            All files ({files.length})
+          </h3>
+        </div>
+      )}
+      
       {viewMode === 'grid' ? (
         /* Grid View */
         <div className="mx-3 sm:mx-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {files.map((file) => (
-            <div key={file.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-shadow">
+            <div 
+              key={file.id} 
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-shadow"
+              draggable
+              onDragStart={(e) => {
+                setDraggedFile(file.id);
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onDragEnd={() => {
+                setDraggedFile(null);
+                setDragOverFolder(null);
+              }}
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-2"
                     checked={selectedFiles.includes(file.id)}
                     onChange={() => handleSelectFile(file.id)}
                   />
@@ -437,7 +659,7 @@ const Files: React.FC = () => {
                   <th className="px-2 sm:px-3 lg:px-6 py-3 text-left">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                      className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-2"
                       ref={(el) => {
                         if (el) {
                           el.indeterminate = selectedFiles.length > 0 && selectedFiles.length < files.length;
@@ -459,11 +681,23 @@ const Files: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                  {files.map((file) => (
-                   <tr key={file.id} className="hover:bg-gray-50 transition-colors">
+                   <tr 
+                     key={file.id} 
+                     className="hover:bg-gray-50 transition-colors"
+                     draggable
+                     onDragStart={(e) => {
+                       setDraggedFile(file.id);
+                       e.dataTransfer.effectAllowed = 'move';
+                     }}
+                     onDragEnd={() => {
+                       setDraggedFile(null);
+                       setDragOverFolder(null);
+                     }}
+                   >
                      <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
                        <input
                          type="checkbox"
-                         className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                         className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-2"
                          checked={selectedFiles.includes(file.id)}
                          onChange={() => handleSelectFile(file.id)}
                        />
@@ -543,7 +777,7 @@ const Files: React.FC = () => {
                        <div className="sm:hidden flex items-center space-x-1">
                          <button
                            title="Download"
-                           className="flex items-center space-x-1 px-2 py-1.5 text-xs bg-primary-50 text-primary rounded-md hover:bg-primary-100 transition-colors min-h-[32px]"
+                           className="flex items-center space-x-1 px-2 py-1.5 text-xs bg-primary-50 text-primary-500 rounded-md hover:bg-primary-100 transition-colors min-h-[32px]"
                            onClick={() => downloadFile(file.id, file.original_name)}
                          >
                            <Download className="w-3 h-3" />
@@ -569,7 +803,7 @@ const Files: React.FC = () => {
             <div className="flex items-center justify-between text-sm text-gray-600">
               <span>{files.length} files total</span>
               {selectedFiles.length > 0 && (
-                <span className="font-medium text-primary">
+                <span className="font-medium text-primary-500">
                   {selectedFiles.length} selected
                 </span>
               )}
@@ -582,54 +816,85 @@ const Files: React.FC = () => {
       {uploadDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">Upload File</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Upload Files</h2>
             <div className="mb-4">
               <input
                 accept="*/*"
                 className="hidden"
                 id="file-upload"
                 type="file"
+                multiple
                 onChange={handleFileUpload}
                 disabled={loading}
               />
               <label htmlFor="file-upload">
-                <div className={`flex items-center justify-center space-x-2 w-full px-4 py-3 sm:py-2 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                <div className={`flex items-center justify-center space-x-2 w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                   loading 
                     ? 'border-gray-200 bg-gray-50 cursor-not-allowed' 
-                    : 'border-gray-300 hover:border-blue-400'
+                    : 'border-gray-300 hover:border-primary-400'
                 }`}>
                   {loading ? (
                     <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                   ) : (
-                    <CloudUpload className="w-5 h-5 text-gray-400" />
+                    <CloudUpload className="w-8 h-8 text-gray-400" />
                   )}
-                  <span className="text-gray-600 text-sm sm:text-base">
-                    {loading ? 'Uploading...' : 'Choose File'}
-                  </span>
+                  <div className="text-center">
+                    <span className="text-gray-600 text-sm sm:text-base block">
+                      {loading ? 'Uploading...' : 'Choose Files or Drag & Drop'}
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      Select multiple files to upload
+                      {currentFolderId && ' to current folder'}
+                    </span>
+                  </div>
                 </div>
               </label>
-              {uploadProgress > 0 && (
+              
+              {/* Selected Files List */}
+              {selectedUploadFiles.length > 0 && (
                 <div className="mt-4">
                   <p className="text-sm text-gray-600 mb-2">
-                    Upload Progress: {uploadProgress}%
+                    Selected Files ({selectedUploadFiles.length}):
                   </p>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {selectedUploadFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
+                        <span className="truncate flex-1">{file.name}</span>
+                        <span className="text-gray-500 ml-2">
+                          {(file.size / 1024 / 1024).toFixed(1)} MB
+                        </span>
+                        {uploadingFiles[file.name] !== undefined && (
+                          <div className="ml-2 w-12 text-right">
+                            {uploadingFiles[file.name]}%
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <button
-                onClick={() => setUploadDialog(false)}
+                onClick={() => {
+                  setUploadDialog(false);
+                  setSelectedUploadFiles([]);
+                  setUploadingFiles({});
+                }}
                 disabled={loading}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
+              {selectedUploadFiles.length > 0 && (
+                <button
+                  onClick={handleMultipleFileUpload}
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Uploading...' : `Upload ${selectedUploadFiles.length} File${selectedUploadFiles.length > 1 ? 's' : ''}`}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -666,7 +931,7 @@ const Files: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => shareFile(selectedFile.id)}
-                    className="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+                    className="w-full sm:w-auto px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
                   >
                     Generate Share Link
                   </button>
@@ -719,6 +984,15 @@ const Files: React.FC = () => {
           </button>
           <button
             onClick={() => {
+              if (menuFile) handleMoveToFolder(menuFile);
+            }}
+            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <Move className="w-4 h-4 mr-2" />
+            Move to Folder
+          </button>
+          <button
+            onClick={() => {
               if (menuFile) deleteFile(menuFile.id);
               handleMenuClose();
             }}
@@ -749,6 +1023,30 @@ const Files: React.FC = () => {
           onClick={handleMenuClose}
         />
       )}
+
+      {/* Create Folder Modal */}
+      <CreateFolderModal
+        isOpen={createFolderModal}
+        onClose={() => setCreateFolderModal(false)}
+        onSuccess={handleFolderModalSuccess}
+        parentFolderId={parentFolderId}
+        editFolder={editingFolder || undefined}
+      />
+
+      {/* Move File to Folder Modal */}
+      <MoveFolderModal
+        isOpen={showMoveModal}
+        onClose={() => setShowMoveModal(false)}
+        onMoveFile={async (folderId) => {
+          if (fileToMove) {
+            await moveFileToFolder(fileToMove.id, folderId);
+            setShowMoveModal(false);
+            setFileToMove(null);
+          }
+        }}
+        fileName={fileToMove?.original_name || ''}
+      />
+      </div>
     </div>
   );
 };
