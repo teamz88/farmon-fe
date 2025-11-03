@@ -221,7 +221,18 @@ const Chat: React.FC = () => {
   const loadMessages = async (conversationId: string) => {
     try {
       const response = await chatApi.getConversationHistory(conversationId);
-      setMessages(response.data.results || response.data);
+      const messages = response.data.results || response.data;
+
+      // Clean up sources - remove empty arrays and null/undefined
+      const cleanedMessages = messages.map((msg: any) => {
+        if (msg.sources && Array.isArray(msg.sources) && msg.sources.length === 0) {
+          const { sources, ...rest } = msg;
+          return rest;
+        }
+        return msg;
+      });
+
+      setMessages(cleanedMessages);
     } catch (error) {
       console.error('Failed to load messages:', error);
     }
@@ -423,7 +434,7 @@ const Chat: React.FC = () => {
                   
                   if (sourcesToAdd.length > 0) {
                     accumulatedSources.push(...sourcesToAdd);
-                    
+
                     // Update the assistant message with sources
                     setMessages(prev => {
                       const updatedMessages = prev.map(msg => {
@@ -431,7 +442,7 @@ const Chat: React.FC = () => {
                           return {
                             ...msg,
                             id: actualAssistantMessageId || msg.id,
-                            sources: [...accumulatedSources],
+                            sources: accumulatedSources.length > 0 ? [...accumulatedSources] : undefined,
                             updated_at: new Date().toISOString()
                           };
                         }
@@ -625,6 +636,12 @@ const Chat: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // Get file type display name
+  const getFileTypeDisplay = (file: File): string => {
+    const extension = file.name.split('.').pop()?.toUpperCase();
+    return extension || 'FILE';
   };
 
   // Utility functions for ChatGPT-like features
@@ -1164,11 +1181,17 @@ const Chat: React.FC = () => {
                             )}
                             
                             {/* Sources section for assistant messages */}
-                            {message.message_type === 'assistant' && message.sources && message.sources.length > 0 && (
+                            {(() => {
+                              const hasSources = message.message_type === 'assistant' &&
+                                               message.sources &&
+                                               Array.isArray(message.sources) &&
+                                               message.sources.length > 0 &&
+                                               message.sources.some(s => s && (typeof s === 'string' ? s.trim() : true));
+                              return hasSources ? (
                               <div className="mt-3 pt-3 border-t border-primary-200">
                                 <p className="text-sm font-medium text-primary-700 mb-2">Sources:</p>
                                 <div className="space-y-1">
-                                  {message.sources.map((source, index) => {
+                                  {message.sources.filter(s => s && (typeof s === 'string' ? s.trim() : true)).map((source, index) => {
                                     // Handle both string sources (legacy) and object sources (new format)
                                     let sourceUrl: string;
                                     let displayText: string;
@@ -1230,8 +1253,9 @@ const Chat: React.FC = () => {
                                   })}
                                 </div>
                               </div>
-                            )}
-                            
+                            ) : null;
+                            })()}
+
                             <p
                               className={`text-sm mt-2 opacity-70 ${
                                 message.message_type === 'user' ? 'text-primary-100' : 'text-primary-500'
@@ -1361,35 +1385,7 @@ const Chat: React.FC = () => {
 
             {/* Message Input */}
             <div className="p-2 sm:p-4 border-t border-primary-200">
-              {/* Selected file display */}
-              {selectedFile && (
-                <div className="mb-2 p-2 bg-primary-50 rounded-lg border border-primary-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <PaperclipIcon className="w-4 h-4 text-primary-600" />
-                      <span className="text-sm text-primary-700">{selectedFile.name}</span>
-                      <span className="text-xs text-primary-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleFileUpload}
-                        disabled={uploadingFile}
-                        className="px-2 py-1 text-xs bg-primary-400 text-white rounded hover:bg-primary-500 disabled:bg-primary-300 transition-colors"
-                      >
-                        {uploadingFile ? 'Uploading...' : 'Upload'}
-                      </button>
-                      <button
-                        onClick={removeSelectedFile}
-                        className="p-1 text-primary-400 hover:text-primary-600 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-2">
+              <div className="relative">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -1397,16 +1393,50 @@ const Chat: React.FC = () => {
                   className="hidden"
                   accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls"
                 />
+
+                {/* File display inside input area */}
+                {selectedFile && (
+                  <div className="absolute left-12 top-2 max-w-[calc(100%-7rem)] w-fit bg-red-50 rounded-md px-1.5 py-1 flex items-center gap-1 border border-red-200 shadow-sm z-10">
+                    {uploadingFile ? (
+                      <div className="flex items-center justify-center w-5 h-5 bg-blue-500 rounded flex-shrink-0">
+                        <div className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center w-5 h-5 bg-red-500 rounded flex-shrink-0">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="min-w-0 max-w-[200px]">
+                      <p className="text-[11px] font-medium text-gray-900 truncate leading-tight">{selectedFile.name}</p>
+                      <p className="text-[9px] text-gray-500 leading-tight">
+                        {uploadingFile ? 'Uploading...' : getFileTypeDisplay(selectedFile)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={removeSelectedFile}
+                      disabled={uploadingFile}
+                      className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Remove file"
+                    >
+                      <X className="w-2 h-2 text-white" />
+                    </button>
+                  </div>
+                )}
+
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={loading || uploadingFile}
-                  className="p-2 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  className="absolute left-2 bottom-2 p-2 text-primary-400 hover:text-primary-600 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 z-20"
                   title="Attach file"
                 >
                   <PaperclipIcon className="w-4 h-4" />
                 </button>
                 <textarea
-                  className="flex-1 resize-none rounded-lg border border-primary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-primary-100 disabled:cursor-not-allowed"
+                  className={`w-full pl-12 pr-14 border border-primary-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-primary-100 disabled:cursor-not-allowed resize-none transition-all ${
+                    selectedFile ? 'pt-11 pb-2' : 'py-2'
+                  }`}
                   rows={1}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
@@ -1423,7 +1453,7 @@ const Chat: React.FC = () => {
                 <button
                   onClick={sendMessage}
                   disabled={loading}
-                  className="px-3 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                  className={`absolute right-2 bottom-2 px-3 py-2 ${selectedFile ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-300' : 'bg-primary-400 hover:bg-primary-500 disabled:bg-primary-300'} text-white rounded-lg disabled:cursor-not-allowed transition-colors flex-shrink-0 z-20`}
                 >
                   <SendIcon className="w-4 h-4" />
                 </button>
@@ -1439,35 +1469,7 @@ const Chat: React.FC = () => {
                 <h1 className="text-3xl font-semibold text-primary-800 mb-2">Hello 👋, {user?.first_name ? user.first_name.charAt(0).toUpperCase() + user.first_name.slice(1).toLowerCase() : 'there'}! How can I help you?</h1>
               </div>
               
-              {/* Selected file display for start screen */}
-              {selectedFile && (
-                <div className="mb-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <PaperclipIcon className="w-4 h-4 text-primary-600" />
-                      <span className="text-sm text-primary-700">{selectedFile.name}</span>
-                      <span className="text-xs text-primary-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    </div>
-                    <div className="flex gap-2">
-                      {/* <button
-                        onClick={handleFileUpload}
-                        disabled={uploadingFile}
-                        className="px-3 py-1 text-sm bg-primary-400 text-white rounded hover:bg-primary-500 disabled:bg-primary-300 transition-colors"
-                      >
-                        {uploadingFile ? 'Uploading...' : 'Upload'}
-                      </button> */}
-                      <button
-                        onClick={removeSelectedFile}
-                        className="p-1 text-primary-400 hover:text-primary-600 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Centered input */}
+              {/* Centered input with file display inside */}
               <div className="relative">
                 <input
                   type="file"
@@ -1476,10 +1478,42 @@ const Chat: React.FC = () => {
                   className="hidden"
                   accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls"
                 />
+
+                {/* File display inside input area */}
+                {selectedFile && (
+                  <div className="absolute left-12 top-2.5 max-w-[calc(100%-7rem)] w-fit bg-red-50 rounded-md px-1.5 py-1 flex items-center gap-1 border border-red-200 shadow-sm z-10">
+                    {uploadingFile ? (
+                      <div className="flex items-center justify-center w-5 h-5 bg-blue-500 rounded flex-shrink-0">
+                        <div className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center w-5 h-5 bg-red-500 rounded flex-shrink-0">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="min-w-0 max-w-[200px]">
+                      <p className="text-[11px] font-medium text-gray-900 truncate leading-tight">{selectedFile.name}</p>
+                      <p className="text-[9px] text-gray-500 leading-tight">
+                        {uploadingFile ? 'Uploading...' : getFileTypeDisplay(selectedFile)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={removeSelectedFile}
+                      disabled={uploadingFile}
+                      className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Remove file"
+                    >
+                      <X className="w-2 h-2 text-white" />
+                    </button>
+                  </div>
+                )}
+
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={loading || uploadingFile}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 p-1 text-primary-400 hover:text-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 p-1 text-primary-400 hover:text-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-20"
                   title="Attach file"
                 >
                   <PaperclipIcon className="w-4 h-4" />
@@ -1493,8 +1527,10 @@ const Chat: React.FC = () => {
                       sendMessage();
                     }
                   }}
-                  placeholder="Type your message..."
-                  className="w-full px-12 py-3 pr-12 border border-primary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
+                  placeholder="Ask anything"
+                  className={`w-full px-12 pr-14 border border-primary-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none transition-all ${
+                    selectedFile ? 'pt-11 pb-3' : 'py-3'
+                  }`}
                   rows={1}
                   disabled={loading}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -1502,7 +1538,7 @@ const Chat: React.FC = () => {
                 <button
                   onClick={sendMessage}
                   disabled={loading}
-                  className={`absolute cursor-pointer right-2 top-1/2 transform -translate-y-1/2 p-2 ${selectedFile ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-300' : 'bg-primary-400 hover:bg-primary-500 disabled:bg-primary-300'} text-white rounded-lg disabled:cursor-not-allowed transition-colors`}
+                  className={`absolute cursor-pointer right-2 top-1/2 transform -translate-y-1/2 p-2 ${selectedFile ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-300' : 'bg-primary-400 hover:bg-primary-500 disabled:bg-primary-300'} text-white rounded-lg disabled:cursor-not-allowed transition-colors z-20`}
                 >
                   <SendIcon className="w-4 h-4" />
                 </button>

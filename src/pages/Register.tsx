@@ -119,7 +119,7 @@ const Register: React.FC = () => {
       <div className="relative z-10 w-full max-w-lg">
         {/* Logo/Brand section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center overflow-hidden bg-primary-400 rounded-xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center overflow-hidden bg-white rounded-xl mb-4 shadow-lg">
             <img src='/farmon.png' alt='logo' className='w-full h-16'/>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
