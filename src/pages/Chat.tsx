@@ -1251,7 +1251,7 @@ const Chat: React.FC = () => {
                                               className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                                               title="View PDF"
                                             >
-                                              <EyeIcon className="w-4 h-4" />
+                                              <FileTextIcon className="w-4 h-4" />
                                             </button>
                                           )}
                                           {isUrl ? (
@@ -1267,9 +1267,10 @@ const Chat: React.FC = () => {
                                           ) : (
                                             <button
                                               onClick={() => {
-                                                // Create a download link for the source document
+                                                // Create a download link for the source document through our backend
+                                                const baseURL = (import.meta as any).env.VITE_API_BASE_URL || 'https://backendfarmon.omadligrouphq.com/api';
                                                 const link = document.createElement('a');
-                                                link.href = `https://farmonpagerag.omadligrouphq.com/files/download/${sourceUrl}`;
+                                                link.href = `${baseURL}/chat/files/download/${sourceUrl}`;
                                                 link.target = '_blank';
                                                 link.click();
                                               }}
