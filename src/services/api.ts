@@ -356,6 +356,9 @@ export const analyticsApi = {
 
   getTokenUsageByUser: (params?: { start_date?: string; end_date?: string }) =>
     api.get<TokenUsageByUser>('/analytics/token-usage-by-user/', { params }),
+
+  getDailyTokenUsage: (params?: { start_date?: string; end_date?: string }) =>
+    api.get('/analytics/daily-token-usage/', { params }),
 };
 
 

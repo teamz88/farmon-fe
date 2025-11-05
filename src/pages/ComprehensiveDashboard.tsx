@@ -30,8 +30,9 @@ import {
   ArcElement,
 } from 'chart.js';
 import dayjs from 'dayjs';
-import { useDashboardStats, useSubscriptionStats } from '../hooks/useAnalytics';
+import { useDashboardStats, useSubscriptionStats, useTokenUsageByUser, useDailyTokenUsage } from '../hooks/useAnalytics';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import AdminTokenUsageCard from '../components/AdminTokenUsageCard';
 
 ChartJS.register(
@@ -53,12 +54,17 @@ interface StatCardProps {
   color: string;
   subtitle?: string;
   loading?: boolean;
-  link?: string;
+  onClick?: () => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle, loading, link }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle, loading, onClick }) => {
   return (
-    <a href={link || '#'} className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+    <div
+      onClick={onClick}
+      className={`bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300 ${
+        onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 truncate">{title}</p>
@@ -80,7 +86,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle
           <div style={{ color }} className="w-5 h-5 sm:w-6 sm:h-6">{icon}</div>
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 
@@ -103,6 +109,9 @@ const formatNumber = (num: number): string => {
 
 const ComprehensiveDashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const tokenChartRef = React.useRef<HTMLDivElement>(null);
+
   const [dateRange] = useState({
     start_date: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
     end_date: dayjs().format('YYYY-MM-DD'),
@@ -112,6 +121,20 @@ const ComprehensiveDashboard: React.FC = () => {
   // Fetch dashboard data with real-time updates
   const { data: dashboardStats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStats(dateRange);
   const { data: subscriptionStats, isLoading: subscriptionLoading, refetch: refetchSubscriptions } = useSubscriptionStats(dateRange);
+
+  // Fetch token usage data for system performance card
+  const { data: tokenUsageData, isLoading: tokenUsageLoading } = useTokenUsageByUser(dateRange);
+
+  // Fetch daily token usage for 30-day chart
+  const { data: dailyTokenData, isLoading: dailyTokenLoading } = useDailyTokenUsage(dateRange);
+
+  // Calculate total tokens from token usage data
+  const totalTokensFromUsage = tokenUsageData?.data?.reduce((sum, user) => sum + (user.total_tokens || user.total_tokens_used || 0), 0) || 0;
+
+  // Scroll to token chart
+  const scrollToTokenChart = () => {
+    tokenChartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -136,7 +159,9 @@ const ComprehensiveDashboard: React.FC = () => {
       return {
         userGrowthData: { labels: [], datasets: [] },
         activityData: { labels: [], datasets: [] },
-        featureUsageData: { labels: [], datasets: [] }
+        revenueData: { labels: [], datasets: [] },
+        featureUsageData: { labels: [], datasets: [] },
+        dailyTokenChartData: { labels: [], datasets: [] }
       };
     }
 
@@ -164,8 +189,8 @@ const ComprehensiveDashboard: React.FC = () => {
         {
           label: 'Total Users',
           data: dashboardStats.user_growth_chart?.map(item => item.total_users) || [],
-          borderColor: 'rgb(229, 160, 109)',
-          backgroundColor: 'rgba(229, 160, 109, 0.1)',
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
           tension: 0.4,
           fill: true,
         },
@@ -183,8 +208,27 @@ const ComprehensiveDashboard: React.FC = () => {
         {
           label: 'Questions Asked',
           data: dashboardStats.activity_chart?.map(item => item.questions) || [],
-          borderColor: 'rgb(229, 160, 109)',
-          backgroundColor: 'rgba(229, 160, 109, 0.1)',
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    };
+
+    // Revenue Chart Data (Site Visits replacement)
+    const revenueLabels = dashboardStats.revenue_chart?.map(item =>
+      dayjs(item.date).format('MMM DD')
+    ) || [];
+
+    const revenueData = {
+      labels: revenueLabels,
+      datasets: [
+        {
+          label: 'Daily Revenue',
+          data: dashboardStats.revenue_chart?.map(item => item.revenue) || [],
+          borderColor: 'rgb(168, 85, 247)',
+          backgroundColor: 'rgba(168, 85, 247, 0.1)',
           tension: 0.4,
           fill: true,
         },
@@ -211,10 +255,28 @@ const ComprehensiveDashboard: React.FC = () => {
       ],
     };
 
-    return { userGrowthData, totalUsersData, activityData, featureUsageData };
+    // Token Usage Chart Data (Last 30 Days)
+    const tokenLabels = dailyTokenData?.data?.map((item: any) =>
+      dayjs(item.date).format('MMM DD')
+    ) || [];
+
+    const dailyTokenChartData = {
+      labels: tokenLabels,
+      datasets: [
+        {
+          label: 'Total Tokens Used',
+          data: dailyTokenData?.data?.map((item: any) => item.total_tokens) || [],
+          backgroundColor: 'rgba(168, 85, 247, 0.8)',
+          borderColor: 'rgb(168, 85, 247)',
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    return { userGrowthData, totalUsersData, activityData, revenueData, featureUsageData, dailyTokenChartData };
   };
 
-  const { userGrowthData, totalUsersData, activityData, featureUsageData } = processChartData();
+  const { userGrowthData, totalUsersData, activityData, revenueData, featureUsageData, dailyTokenChartData } = processChartData();
 
   const chartOptions = {
     responsive: true,
@@ -312,7 +374,7 @@ const ComprehensiveDashboard: React.FC = () => {
         </div>
         <button
           onClick={handleManualRefresh}
-          className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-primary-400 text-white rounded-lg hover:bg-primary-500 transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
+          className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-black text-white rounded-lg hover:bg-black transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
           disabled={statsLoading}
         >
           <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} />
@@ -324,22 +386,20 @@ const ComprehensiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatCard
           title="Total Users"
-          value={formatNumber(dashboardStats?.total_users as number - 1 || 0)}
+          value={formatNumber(dashboardStats?.total_users || 0)}
           icon={<Users className="w-6 h-6" />}
-          color="#e5a06d"
+          color="#3B82F6"
           loading={statsLoading}
-          link="/users"
+          onClick={() => navigate('/users')}
         />
         <StatCard
-          title="Token Usage"
-          value={formatNumber(
-            (dashboardStats?.total_tokens_used || 0) + 
-            (dashboardStats?.chat_tokens_total || 0)
-          )}
+          title="System Performance"
+          value={formatNumber(totalTokensFromUsage)}
           icon={<Activity className="w-6 h-6" />}
           color="#84CC16"
-          subtitle="Total Tokens"
-          loading={statsLoading}
+          subtitle="Total Tokens Used"
+          loading={statsLoading || tokenUsageLoading}
+          onClick={scrollToTokenChart}
         />
         <StatCard
           title="Files Uploaded"
@@ -347,7 +407,7 @@ const ComprehensiveDashboard: React.FC = () => {
           icon={<Upload className="w-6 h-6" />}
           color="#F59E0B"
           loading={statsLoading}
-          link="/files"
+          onClick={() => navigate('/files')}
         />
         <StatCard
           title="Storage Used"
@@ -355,13 +415,33 @@ const ComprehensiveDashboard: React.FC = () => {
           icon={<HardDrive className="w-6 h-6" />}
           color="#EF4444"
           loading={statsLoading}
+          onClick={() => navigate('/files')}
         />
       </div>
+      {/* Token Usage Analytics */}
+      <div className="mb-6 sm:mb-8">
+        <AdminTokenUsageCard />
+      </div>
+      {/* Token Usage Chart - Full Width */}
+      <div ref={tokenChartRef} className="mb-6 sm:mb-8">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Token Usage (Last 30 Days)</h3>
+            <Activity className="w-5 h-5 text-purple-600" />
+          </div>
+          {dailyTokenLoading ? (
+            <div className="h-64 sm:h-80 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            </div>
+          ) : (
+            <div className="h-64 sm:h-80">
+              <Bar data={dailyTokenChartData} options={barChartOptions} />
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Admin Token Usage Section */}
-      <AdminTokenUsageCard className="mb-6 sm:mb-8" />
-
-      {/* Charts Section */}
+      {/* Other Charts Section */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
         {/* Daily Questions Chart */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
